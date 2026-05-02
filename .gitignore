@@ -29,9 +29,9 @@ coverage/
 
 # Publish artifacts
 publish/
+/dist/app/
 
 # SQLite local databases
-#*.db
 *.db-shm
 *.db-wal
 *.sqlite

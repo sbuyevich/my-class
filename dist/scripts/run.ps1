@@ -203,6 +203,26 @@ function Stop-PreviousLaunch {
     Remove-Item -LiteralPath $PidPath -ErrorAction SilentlyContinue
 }
 
+function Stop-MyClassWebProcess {
+    param([string]$PidPath)
+
+    $processes = @(Get-Process -Name "MyClass.Web" -ErrorAction SilentlyContinue)
+
+    if (-not $processes) {
+        return
+    }
+
+    foreach ($process in $processes) {
+        Write-Host "Stopping existing MyClass.Web process $($process.Id)."
+        Stop-Process -Id $process.Id -Force
+        Wait-Process -Id $process.Id -Timeout 10 -ErrorAction SilentlyContinue
+    }
+
+    if (Test-Path -LiteralPath $PidPath) {
+        Remove-Item -LiteralPath $PidPath -ErrorAction SilentlyContinue
+    }
+}
+
 function Assert-PortAvailable {
     param([int]$Port)
 
@@ -292,6 +312,7 @@ $browserUrl = "{0}/?c={1}" -f $bindingUrl, $encodedClassCode
 $workingDirectory = Split-Path -Path $exePath -Parent
 
 Stop-PreviousLaunch -PidPath $pidPath -ExpectedExePath $exePath
+Stop-MyClassWebProcess -PidPath $pidPath
 Stop-MyClassListenersOnPort -Port $Port -ExpectedExePath $exePath
 Assert-PortAvailable -Port $Port
 
