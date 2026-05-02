@@ -1,0 +1,8 @@
+@page "/quiz-answer"
+@rendermode InteractiveServer
+
+<PageTitle>My Class</PageTitle>
+
+<RoleGate RequireTeacher="false" DeniedMessage="Only students can submit quiz answers.">
+    <StudentQuizAnswerPanel CurrentClass="CurrentClass" />
+</RoleGate>

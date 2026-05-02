@@ -1,0 +1,100 @@
+@namespace MyClass.Web.Components
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+@inject ILoginStateService LoginStateService
+@inject ISessionStorageService SessionStorage
+@inject IQuizAnswerService QuizAnswerService
+@inject IQuizContentService QuizContentService
+@inject IOptions<QuizOptions> QuizOptions
+@inject NavigationManager Navigation
+
+@if (_isLoading)
+{
+    <LoadingIndicator Text="Loading quiz answer..." />
+}
+else
+{
+    <MudStack Spacing="3" Class="quiz-answer-shell">
+        <MudStack Spacing="1">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
+                <MudText Typo="Typo.h5">@QuizTitle</MudText>
+
+                @if (ShowTimer)
+                {
+                    <MudChip T="string"
+                             Color="@(IsTimerRunning ? Color.Primary : Color.Default)"
+                             Variant="Variant.Filled">
+                        Timer: @FormatRemaining(TimerRemaining)
+                    </MudChip>
+                }
+            </MudStack>
+
+            @if (QuestionProgress.Count > 0)
+            {
+                <div class="quiz-progress-row" aria-label="Quiz question progress">
+                    @foreach (var item in QuestionProgress)
+                    {
+                        <span class="@GetProgressCircleClass(item)"
+                              title="@GetProgressCircleTitle(item)">
+                            @(item.QuestionIndex + 1)
+                        </span>
+                    }
+                </div>
+            }
+
+            @if (ShowRevealMessage)
+            {
+                <div class="@GetRevealMessageClass()">
+                    @RevealMessage
+                </div>
+            }
+            else
+            {
+                <div class="quiz-status-message-row">
+                    <MudText Typo="Typo.subtitle1"
+                             Color="Color.Secondary"
+                             Align="Align.Center"
+                             Class="quiz-status-message">
+                        @StatusMessage
+                    </MudText>
+                </div>
+            }
+        </MudStack>
+
+        @if (!string.IsNullOrWhiteSpace(_imageMessage))
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Filled">@_imageMessage</MudAlert>
+        }
+        else if (!string.IsNullOrWhiteSpace(_imageDataUri))
+        {
+            <img class="quiz-answer-question-image"
+                 src="@_imageDataUri"
+                 alt="@QuestionImageAltText" />
+        }
+
+        @if (ShowAnswerButtons)
+        {
+            <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Align="Align.Center">
+                Click on button with correct answer number
+            </MudText>
+            <div class="quiz-answer-buttons">
+                @foreach (var answer in AnswerChoices)
+                {
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Secondary"
+                               Class="quiz-answer-button"
+                               Disabled="_isSubmitting"
+                               OnClick="() => SubmitAnswerAsync(answer)">
+                        @answer
+                    </MudButton>
+                }
+            </div>
+        }
+        else if (_stateResult?.Value?.HasInProgressAnswer == true)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Filled">
+                No answer choices are available for this question.
+            </MudAlert>
+        }
+    </MudStack>
+}

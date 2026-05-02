@@ -1,0 +1,98 @@
+@namespace MyClass.Web.Components
+@rendermode InteractiveServer
+@inject ISessionStorageService SessionStorage
+@inject ILoginStateService LoginStateService
+@inject IStudentService StudentService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+@if (_isLoading)
+{
+    <LoadingIndicator Text="Loading students..." />
+}
+else if (_studentsResult is null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Filled">
+        Unable to load students.
+    </MudAlert>
+}
+else if (!_studentsResult.Succeeded)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Filled">
+        @_studentsResult.Message
+    </MudAlert>
+}
+else if (_studentsResult.Succeeded)
+{
+    <MudStack Spacing="3">
+        <MudStack Row="true" AlignItems="@AlignItems.Center" Spacing="2">
+            <MudTextField T="string"
+                          Value="_searchText"
+                          ValueChanged="HandleSearchChangedAsync"
+                          Label="Search students"
+                          Placeholder="First name or last name"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Clearable="true"
+                          Class="flex-grow-1" />
+
+            <MudCheckBox T="bool"
+                         Value="_activeOnly"
+                         ValueChanged="HandleActiveOnlyChangedAsync"
+                         Label="Active only"
+                         Color="Color.Primary"
+                         Dense="true" />
+
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Secondary"
+                       StartIcon="@Icons.Material.Filled.RestartAlt"
+                       Disabled="@(_isResetting || _isRemoving)"
+                       OnClick="ResetActiveStudentsAsync">
+                @(_isResetting ? "Resetting..." : "Reset")
+            </MudButton>
+        </MudStack>
+
+        @if (StudentRows.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                @EmptyStateText
+            </MudAlert>
+        }
+        else
+        {
+            <MudTable Items="StudentRows" Dense="true" Hover="true" Elevation="1">
+                <HeaderContent>
+                    <MudTh>Last Name</MudTh>
+                    <MudTh>First Name</MudTh>
+                    <MudTh>User Name</MudTh>
+                    <MudTh Style="text-align:center;">Active</MudTh>
+                    <MudTh Style="text-align:center;">Delete</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Last Name">@context.LastName</MudTd>
+                    <MudTd DataLabel="First Name">@context.FirstName</MudTd>
+                    <MudTd DataLabel="User Name">@context.UserName</MudTd>
+                    <MudTd DataLabel="Active" Style="text-align:center;">
+                        <MudChip T="string"
+                                 Size="Size.Small"
+                                 Color="@(context.IsActive ? Color.Success : Color.Default)"
+                                 Variant="@(context.IsActive ? Variant.Filled : Variant.Outlined)">
+                            @(context.IsActive ? "Active" : "Inactive")
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Delete" Style="text-align:center;">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Disabled="_isRemoving"
+                                       aria-label="Remove student"
+                                       OnClick="() => ConfirmRemoveStudentAsync(context)" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
+    </MudStack>
+}

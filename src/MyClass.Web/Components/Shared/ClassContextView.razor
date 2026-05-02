@@ -1,0 +1,17 @@
+@namespace MyClass.Web.Components
+@implements IDisposable
+@inject IClassContextService ClassContextService
+@inject NavigationManager Navigation
+
+@if (_result is null)
+{
+    <LoadingIndicator Text="Loading class..." />
+}
+else if (!_result.Succeeded)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Filled">@_result.Message</MudAlert>
+}
+else if (ChildContent is not null && _result.Value is not null)
+{
+    @ChildContent(_result.Value)
+}

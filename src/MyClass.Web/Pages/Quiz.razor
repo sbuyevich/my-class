@@ -1,0 +1,8 @@
+@page "/quiz"
+@rendermode InteractiveServer
+
+<PageTitle>My Class</PageTitle>
+
+<RoleGate RequireTeacher="true" DeniedMessage="Only teachers can use the Quiz page.">
+    <TeacherQuizPanel CurrentClass="CurrentClass" />
+</RoleGate>
