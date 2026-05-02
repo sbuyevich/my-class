@@ -31,6 +31,7 @@ coverage/
 publish/
 /dist/app/
 
+
 # SQLite local databases
 *.db-shm
 *.db-wal
