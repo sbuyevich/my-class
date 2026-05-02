@@ -8,7 +8,7 @@ This project is developed in small, reviewable stages. The human owns product in
 - Choose the technology stack.
 - Choose the database approach.
 - Choose delivery, launch, and infrastructure assumptions.
-- Record important decisions in `.design` so later stages do not rediscover them.
+- Record important decisions in `design` so later stages do not rediscover them.
 
 > Use the agent in Plan mode for high-level design and stage planning.
 
