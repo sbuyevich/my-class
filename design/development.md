@@ -37,4 +37,4 @@ This project is developed in small, reviewable stages. The human owns product in
 
 ## Documentation Hygiene
 
-- Update `AGENTS.md`, `README.md`, and relevant `.design` files after meaningful refactors or workflow changes so future agent work stays consistent.
+- Update `AGENTS.md`, `README.md`, and relevant `design` files after meaningful refactors or workflow changes so future agent work stays consistent.

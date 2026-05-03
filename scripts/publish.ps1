@@ -1,7 +1,11 @@
 [CmdletBinding()]
 param(
     [string]$Configuration = "Release",
-    [string]$RuntimeIdentifier = "win-x64",
+    [ValidateSet("win", "macos")]
+    [string]$OS = "win",
+    [ValidateSet("x64", "arm64")]
+    [string]$Architecture = "x64",
+    [string]$RuntimeIdentifier,
     [string]$Framework = "net10.0",
     [switch]$NoClean,
     [switch]$FrameworkDependent,
@@ -82,15 +86,64 @@ function Get-NormalizedFullPath {
 
 function Assert-SafeAppOutputPath {
     param(
-        [string]$DistRoot,
+        [string]$PackageRoot,
         [string]$AppOutputPath
     )
 
-    $expectedPath = Get-NormalizedFullPath -Path (Join-Path $DistRoot "app")
+    $expectedPath = Get-NormalizedFullPath -Path (Join-Path $PackageRoot "app")
     $actualPath = Get-NormalizedFullPath -Path $AppOutputPath
 
     if ($actualPath -ne $expectedPath) {
         throw "Refusing to clean unexpected publish output path '$actualPath'. Expected '$expectedPath'."
+    }
+}
+
+function Resolve-PublishTarget {
+    param(
+        [string]$TargetOS,
+        [string]$TargetArchitecture,
+        [string]$RuntimeIdentifierOverride
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($RuntimeIdentifierOverride)) {
+        if ($RuntimeIdentifierOverride -like "macos-*") {
+            $RuntimeIdentifierOverride = "osx-$($RuntimeIdentifierOverride.Substring(6))"
+        }
+
+        if ($RuntimeIdentifierOverride -like "win-*") {
+            return [PSCustomObject]@{
+                OS = "win"
+                RuntimeIdentifier = $RuntimeIdentifierOverride
+                ExecutableName = "MyClass.Web.exe"
+            }
+        }
+
+        if ($RuntimeIdentifierOverride -like "osx-*") {
+            return [PSCustomObject]@{
+                OS = "macos"
+                RuntimeIdentifier = $RuntimeIdentifierOverride
+                ExecutableName = "MyClass.Web"
+            }
+        }
+
+        throw "Unsupported RuntimeIdentifier '$RuntimeIdentifierOverride'. Use a Windows RID like 'win-x64' or a macOS RID like 'osx-arm64'."
+    }
+
+    switch ($TargetOS) {
+        "win" {
+            return [PSCustomObject]@{
+                OS = "win"
+                RuntimeIdentifier = "win-$TargetArchitecture"
+                ExecutableName = "MyClass.Web.exe"
+            }
+        }
+        "macos" {
+            return [PSCustomObject]@{
+                OS = "macos"
+                RuntimeIdentifier = "osx-$TargetArchitecture"
+                ExecutableName = "MyClass.Web"
+            }
+        }
     }
 }
 
@@ -128,16 +181,19 @@ function Stop-MyClassWebProcess {
 
 $scriptRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
 $repoRoot = Split-Path -Parent $scriptRoot
-$distRoot = Join-Path $repoRoot "dist"
-$projectPath = Join-Path $repoRoot "src\MyClass.Web\MyClass.Web.csproj"
-$appOutputPath = Join-Path $distRoot "app"
-$pidPath = Join-Path $distRoot "myclass.pid"
+$srcRoot = Join-Path $repoRoot "src"
+$webProjectRoot = Join-Path $srcRoot "MyClass.Web"
+$projectPath = Join-Path $webProjectRoot "MyClass.Web.csproj"
+$publishTarget = Resolve-PublishTarget -TargetOS $OS -TargetArchitecture $Architecture -RuntimeIdentifierOverride $RuntimeIdentifier
+$packageRoot = Join-Path $repoRoot "dist-$($publishTarget.OS)"
+$appOutputPath = Join-Path $packageRoot "app"
+$pidPath = Join-Path $packageRoot "myclass.pid"
 
 if (-not (Test-Path -LiteralPath $projectPath)) {
     throw "Project file not found at $projectPath."
 }
 
-if (-not $FrameworkDependent -and [string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
+if (-not $FrameworkDependent -and [string]::IsNullOrWhiteSpace($publishTarget.RuntimeIdentifier)) {
     throw "RuntimeIdentifier is required for a self-contained publish."
 }
 
@@ -146,7 +202,7 @@ $env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
 
 $dotnetPath = Get-DotNetCommand
 Assert-DotNet10SdkInstalled -DotNetPath $dotnetPath
-Assert-SafeAppOutputPath -DistRoot $distRoot -AppOutputPath $appOutputPath
+Assert-SafeAppOutputPath -PackageRoot $packageRoot -AppOutputPath $appOutputPath
 Stop-MyClassWebProcess -PidPath $pidPath
 
 if (-not $NoClean -and (Test-Path -LiteralPath $appOutputPath)) {
@@ -165,8 +221,8 @@ $publishArgs = @(
     "--nologo"
 )
 
-if (-not [string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
-    $publishArgs += @("--runtime", $RuntimeIdentifier)
+if (-not [string]::IsNullOrWhiteSpace($publishTarget.RuntimeIdentifier)) {
+    $publishArgs += @("--runtime", $publishTarget.RuntimeIdentifier)
 }
 
 if ($FrameworkDependent) {
@@ -181,6 +237,8 @@ $publishArgs += "-p:PublishSingleFile=$publishSingleFile"
 
 Write-Host "Publishing $projectPath"
 Write-Host "Output: $appOutputPath"
+Write-Host "Target OS: $($publishTarget.OS)"
+Write-Host "RuntimeIdentifier: $($publishTarget.RuntimeIdentifier)"
 
 & $dotnetPath @publishArgs
 
@@ -188,7 +246,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish failed with exit code $LASTEXITCODE."
 }
 
-$exePath = Join-Path $appOutputPath "MyClass.Web.exe"
+$exePath = Join-Path $appOutputPath $publishTarget.ExecutableName
 
 if (-not $FrameworkDependent -and -not (Test-Path -LiteralPath $exePath)) {
     throw "Publish completed, but expected executable was not found at $exePath."

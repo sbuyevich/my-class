@@ -29,7 +29,8 @@ coverage/
 
 # Publish artifacts
 publish/
-/dist/app/
+/dist-win/app/
+/dist-macos/app/
 
 
 # SQLite local databases
