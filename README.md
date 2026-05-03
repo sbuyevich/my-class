@@ -1,19 +1,17 @@
-# Agentic Engineering Example: Local LAN Classroom Quiz App 
-
-This repo was created to investigate `Agentic Engineering`.
+This repo was created to explore `Agentic Engineering`.
 
 `Agentic Engineering` means using AI agents as part of the software engineering process, not just asking AI to write small code snippets.
 
-## App Creation Flow by Docs
+## App Creation Flow By Docs
 
-1. [Idea](idea.md)
-2. [Spec](spec.md)
-3. [Development](development.md)
+1. [Idea](design/idea.md)
+2. [Spec](design/spec.md)
+3. [Development](design/development.md)
 
 
 # MyClass App
 
-MyClass is a .NET 10 Blazor web app for running classroom quizzes. Teachers can manage schools, classes, and students, start quiz questions, and review/export results. Students can register or sign in with a class code and submit quiz answers from their own browser.
+MyClass is a .NET 10 Blazor web app for running classroom quizzes. Teachers can manage schools, classes, and students, start quiz questions, and review or export results. Students can register or sign in with a class code and submit quiz answers from their own browser.
 
 ## Features
 
@@ -109,7 +107,7 @@ src/assets/quizzes/astronomy/
     a.jpg
 ```
 
-The quiz root is configured with `Quiz:RootFolder` in `src/MyClass.Web/appsettings.json`. Current included quiz sets are:
+The quiz root is configured with `Quiz:RootFolder` in `src/MyClass.Web/appsettings.json`. Currently included quiz sets are:
 
 - `astronomy`
 - `csharp`
@@ -149,7 +147,7 @@ Build both distribution folders and zip files from Windows:
 .\scripts\dist.bat
 ```
 
-This creates/updates:
+This creates or updates:
 
 - `dist-win/`
 - `dist-win.zip`
