@@ -1,10 +1,14 @@
-# Repo Goal
-This repo was created to 
+# Agentic Engineering Example: Local LAN Classroom Quiz App 
 
-## App Creation Flow
+This repo was created to investigate `Agentic Engineering`.
+
+`Agentic Engineering` means using AI agents as part of the software engineering process, not just asking AI to write small code snippets.
+
+## App Creation Flow by Docs
+
 1. [Idea](idea.md)
 2. [Spec](spec.md)
-3. [Devopment](development.md)
+3. [Development](development.md)
 
 
 # MyClass App
