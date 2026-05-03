@@ -1,4 +1,13 @@
-# MyClass
+# Repo Goal
+This repo was created to 
+
+## App Creation Flow
+1. [Idea](idea.md)
+2. [Spec](spec.md)
+3. [Devopment](development.md)
+
+
+# MyClass App
 
 MyClass is a .NET 10 Blazor web app for running classroom quizzes. Teachers can manage schools, classes, and students, start quiz questions, and review/export results. Students can register or sign in with a class code and submit quiz answers from their own browser.
 
@@ -9,7 +18,31 @@ MyClass is a .NET 10 Blazor web app for running classroom quizzes. Teachers can 
 - Real-time quiz status updates with SignalR.
 - Quiz content loaded from local JSON and image assets.
 - MudBlazor UI components.
-- Windows and macOS publish targets with packaged `dist-*` folders.
+- Windows and macOS publish targets with packaged `dist-win.zip` and `dist-macos.zip`.
+
+## Network Requirements
+
+MyClass is designed for local classroom use without cloud hosting. Student devices must be able to reach the teacher's computer over the same LAN/Wi-Fi network.
+
+This usually works on a home Wi-Fi network, but school or guest Wi-Fi can block it. Common blockers include:
+
+- Windows or macOS firewall blocking inbound connections to the app or port `5555`.
+- School Wi-Fi client isolation, where devices can access the internet but cannot connect to each other.
+- Student devices connected to a different Wi-Fi network or a guest network.
+
+To check a network, run the app on the teacher computer and open the shared URL from another device on the same Wi-Fi:
+
+```text
+http://<teacher-local-ip>:5555/?c=demo
+```
+
+From another Windows laptop, the port can also be tested with:
+
+```powershell
+Test-NetConnection <teacher-local-ip> -Port 5555
+```
+
+If `TcpTestSucceeded` is `False`, the teacher computer firewall, the school network, or the app binding is blocking access.
 
 ## Repository Layout
 
@@ -92,7 +125,7 @@ On startup, `DatabaseInitializer` creates missing tables/columns and seeds a dem
 
 Publish one target package:
 
-```powershell
+```
 .\scripts\publish.ps1 -OS win -Architecture x64
 .\scripts\publish.ps1 -OS macos -Architecture x64
 ```
