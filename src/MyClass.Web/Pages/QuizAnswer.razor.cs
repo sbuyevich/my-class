@@ -1,10 +1,14 @@
 using Microsoft.AspNetCore.Components;
-using MyClass.Core.Models;
 
-namespace  MyClass.Web.Pages;
+namespace MyClass.Web.Pages;
 
 public partial class QuizAnswer
 {
-    [CascadingParameter]
-    public ClassContext CurrentClass { get; set; } = null!;
+    [Inject]
+    private NavigationManager Navigation { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        Navigation.NavigateTo("/student", replace: true);
+    }
 }

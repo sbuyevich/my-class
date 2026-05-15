@@ -2,6 +2,7 @@
 bin/
 obj/
 out/
+.build/
 
 # User-specific files
 *.user
@@ -9,12 +10,12 @@ out/
 *.userosscache
 *.lscache
 *.sln.docstates
-*.lscache
 
 # IDE folders
 .vs/
 .vscode/
 .idea/
+
 
 # Logs
 *.log

@@ -10,11 +10,6 @@
             <MudText Typo="Typo.subtitle1" Color="Color.Secondary">@CurrentClass.ClassName</MudText>
         </div>
 
-        <MudPaper Elevation="1" Class="pa-4">
-            <MudStack Spacing="2">
-                <MudText Typo="Typo.h5">Please wait until your teacher is ready for the quiz.</MudText>
-                <MudText Color="Color.Secondary">Your quiz activity will continue from the quiz answer page when your teacher starts.</MudText>
-            </MudStack>
-        </MudPaper>
+        <StudentQuizAnswerPanel CurrentClass="CurrentClass" />
     </MudStack>
 </RoleGate>
