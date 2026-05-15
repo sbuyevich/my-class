@@ -7,6 +7,7 @@ out/
 *.user
 *.suo
 *.userosscache
+*.lscache
 *.sln.docstates
 
 # IDE folders
@@ -52,8 +53,8 @@ Thumbs.db
 .dotnet-home/
 .agents/
 .keys/
-/my-class/src/.dotnet-cli-home/.dotnet
-/my-class/src/.dotnet
+.dotnet/
+
 /my-class/src/artifacts/
 .codex-artifacts/
 /my-class/.codex-artifacts/
