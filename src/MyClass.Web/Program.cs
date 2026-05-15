@@ -42,6 +42,8 @@ builder.Services.AddScoped<IQuizResultService, QuizResultService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<ISchoolClassService, SchoolClassService>();
 builder.Services.AddScoped<ISessionStorageService, SessionStorageService>();
+builder.Services.AddSingleton<IUrlService, UrlService>();
+builder.Services.AddSingleton<IQrCodeService, QrCodeService>();
 builder.Services.AddSingleton<IActiveQuizSelectionService, ActiveQuizSelectionService>();
 builder.Services.AddSingleton<IPasswordHashService, PasswordHashService>();
 

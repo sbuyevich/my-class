@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using MyClass.Core.Models;
+using MyClass.Web.App;
 
 namespace MyClass.Web.Components;
 
@@ -36,7 +37,7 @@ public partial class AuthGate
     private async Task HandleAuthSucceededAsync(LoginState state)
     {
         _showRegistration = false;
-        await InvokeAsync(() => Navigation.NavigateTo("/home"));
+        await InvokeAsync(() => Navigation.NavigateTo(LandingRoutes.For(state)));
     }
 
     private void ShowRegistration()

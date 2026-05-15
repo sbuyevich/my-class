@@ -71,3 +71,10 @@ Show a message telling the student to wait until the teacher is ready for the qu
 - `/teacher` and `/student` are the intended new routes.
 - The class query parameter remains named `c`.
 - The QR code should send students through the existing class-aware entry/login flow.
+
+## Tasks
+- [x] [Task 01 - BRD Update](tasks/01-brd-update.md)
+- [x] [Task 02 - Routes and Redirects](tasks/02-routes-and-redirects.md)
+- [x] [Task 03 - Teacher Landing Page](tasks/03-teacher-landing-page.md)
+- [x] [Task 04 - Student Landing Page](tasks/04-student-landing-page.md)
+- [ ] [Task 10 - Verification](tasks/10-verification.md)
