@@ -65,11 +65,11 @@ public partial class SchoolClass
 
     private async Task LoadLoginStateAsync()
     {
-        _loginState = LoginStateService.Current ?? await SessionStorage.GetLoginStateAsync();
+        _loginState = LoginStateService.CurrentLoginState ?? await SessionStorage.GetLoginStateAsync();
 
-        if (_loginState is not null && LoginStateService.Current is null)
+        if (_loginState is not null && LoginStateService.CurrentLoginState is null)
         {
-            LoginStateService.Set(_loginState);
+            LoginStateService.SetLoginState(_loginState);
         }
     }
 

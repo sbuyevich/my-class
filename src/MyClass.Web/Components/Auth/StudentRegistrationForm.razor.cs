@@ -58,7 +58,7 @@ public partial class StudentRegistrationForm
         if (!result.Succeeded || result.Value is null)
         {
             await SessionStorage.RemoveLoginStateAsync();
-            LoginStateService.Set(null);
+            LoginStateService.SetLoginState(null);
             _messageSeverity = Severity.Error;
             _message = result.Message;
             _isSubmitting = false;
@@ -66,7 +66,7 @@ public partial class StudentRegistrationForm
         }
 
         await SessionStorage.SetLoginStateAsync(result.Value);
-        LoginStateService.Set(result.Value);
+        LoginStateService.SetLoginState(result.Value);
         _isSubmitting = false;
 
         await Succeeded.InvokeAsync(result.Value);

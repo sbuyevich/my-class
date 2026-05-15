@@ -16,19 +16,19 @@
     <LoadingIndicator Text="Checking access..." />
 }
 @* Unauthenticated state: No user is currently logged in *@
-else if (LoginStateService.Current is null)
+else if (LoginStateService.CurrentLoginState is null)
 {
     <MudAlert Severity="Severity.Warning" Variant="Variant.Filled">
         Sign in to continue.
     </MudAlert>
 }
 @* Access granted for teachers when RequireTeacher is true *@
-else if (RequireTeacher && LoginStateService.Current.IsTeacher)
+else if (RequireTeacher && LoginStateService.CurrentLoginState.IsTeacher)
 {
     @ChildContent
 }
 @* Access granted for students when RequireTeacher is false *@
-else if (!RequireTeacher && !LoginStateService.Current.IsTeacher)
+else if (!RequireTeacher && !LoginStateService.CurrentLoginState.IsTeacher)
 {
     @ChildContent
 }

@@ -14,11 +14,11 @@ public partial class AuthGate
 
     private bool ShouldShowGate =>
         CurrentClass is not null &&
-        (!_loadedLoginState || LoginStateService.Current is null);
+        (!_loadedLoginState || LoginStateService.CurrentLoginState is null);
 
     protected override void OnInitialized()
     {
-        LoginStateService.Changed += OnLoginStateChanged;
+        LoginStateService.LoginStateChanged += OnLoginStateChanged;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -29,7 +29,7 @@ public partial class AuthGate
         }
 
         var state = await SessionStorage.GetLoginStateAsync();
-        LoginStateService.Set(state);
+        LoginStateService.SetLoginState(state);
         _loadedLoginState = true;
         StateHasChanged();
     }
@@ -57,6 +57,6 @@ public partial class AuthGate
 
     public void Dispose()
     {
-        LoginStateService.Changed -= OnLoginStateChanged;
+        LoginStateService.LoginStateChanged -= OnLoginStateChanged;
     }
 }

@@ -6,7 +6,7 @@ public partial class AppGreeting
     {
         get
         {
-            var state = LoginStateService.Current;
+            var state = LoginStateService.CurrentLoginState;
 
             if (state is null)
             {
@@ -23,12 +23,12 @@ public partial class AppGreeting
 
     protected override void OnInitialized()
     {
-        LoginStateService.Changed += OnLoginStateChanged;
+        LoginStateService.LoginStateChanged += OnLoginStateChanged;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || LoginStateService.Current is not null)
+        if (!firstRender || LoginStateService.CurrentLoginState is not null)
         {
             return;
         }
@@ -37,7 +37,7 @@ public partial class AppGreeting
 
         if (state is not null)
         {
-            LoginStateService.Set(state);
+            LoginStateService.SetLoginState(state);
         }
     }
 
@@ -48,6 +48,6 @@ public partial class AppGreeting
 
     public void Dispose()
     {
-        LoginStateService.Changed -= OnLoginStateChanged;
+        LoginStateService.LoginStateChanged -= OnLoginStateChanged;
     }
 }

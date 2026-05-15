@@ -16,14 +16,14 @@ public partial class Register
             return;
         }
 
-        var state = LoginStateService.Current ?? await SessionStorage.GetLoginStateAsync();
+        var state = LoginStateService.CurrentLoginState ?? await SessionStorage.GetLoginStateAsync();
 
         if (state is null)
         {
             return;
         }
 
-        LoginStateService.Set(state);
+        LoginStateService.SetLoginState(state);
         Navigation.NavigateTo(LandingRoutes.For(state));
     }
 

@@ -68,12 +68,12 @@ public partial class StudentGrid
     {
         _loadedClassId = currentClass.ClassId;
 
-        _loginState = LoginStateService.Current;
+        _loginState = LoginStateService.CurrentLoginState;
 
         if (_loginState is null)
         {
             _loginState = await SessionStorage.GetLoginStateAsync();
-            LoginStateService.Set(_loginState);
+            LoginStateService.SetLoginState(_loginState);
         }
 
         _studentsResult = await StudentService.GetStudentsForClassAsync(_loginState, currentClass, _searchText, _activeOnly);

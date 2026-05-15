@@ -8,13 +8,13 @@ public partial class NavMenu
     [Parameter]
     public ClassContext? CurrentClass { get; set; }
 
-    private bool IsTeacher => LoginStateService.Current?.IsTeacher == true;
+    private bool IsTeacher => LoginStateService.CurrentLoginState?.IsTeacher == true;
 
-    private bool IsStudent => LoginStateService.Current?.IsTeacher == false;
+    private bool IsStudent => LoginStateService.CurrentLoginState?.IsTeacher == false;
 
     protected override void OnInitialized()
     {
-        LoginStateService.Changed += OnLoginStateChanged;
+        LoginStateService.LoginStateChanged += OnLoginStateChanged;
     }
 
     private void OnLoginStateChanged()
@@ -24,6 +24,6 @@ public partial class NavMenu
 
     public void Dispose()
     {
-        LoginStateService.Changed -= OnLoginStateChanged;
+        LoginStateService.LoginStateChanged -= OnLoginStateChanged;
     }
 }

@@ -17,7 +17,7 @@ public partial class RoleGate
 
     protected override void OnInitialized()
     {
-        LoginStateService.Changed += OnLoginStateChanged;
+        LoginStateService.LoginStateChanged += OnLoginStateChanged;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -27,8 +27,8 @@ public partial class RoleGate
             return;
         }
 
-        var state = LoginStateService.Current ?? await SessionStorage.GetLoginStateAsync();
-        LoginStateService.Set(state);
+        var state = LoginStateService.CurrentLoginState ?? await SessionStorage.GetLoginStateAsync();
+        LoginStateService.SetLoginState(state);
         _loadedLoginState = true;
         StateHasChanged();
     }
@@ -40,6 +40,6 @@ public partial class RoleGate
 
     public void Dispose()
     {
-        LoginStateService.Changed -= OnLoginStateChanged;
+        LoginStateService.LoginStateChanged -= OnLoginStateChanged;
     }
 }

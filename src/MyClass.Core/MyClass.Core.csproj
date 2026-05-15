@@ -20,8 +20,4 @@
     <PackageReference Include="Microsoft.JSInterop" Version="10.0.7" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\ClassContext\" />
-  </ItemGroup>
-
 </Project>

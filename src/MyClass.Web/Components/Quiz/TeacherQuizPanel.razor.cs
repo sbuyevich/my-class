@@ -67,8 +67,8 @@ public partial class TeacherQuizPanel
         }
 
         _loadedClassId = CurrentClass.ClassId;
-        _loginState = LoginStateService.Current ?? await SessionStorage.GetLoginStateAsync();
-        LoginStateService.Set(_loginState);
+        _loginState = LoginStateService.CurrentLoginState ?? await SessionStorage.GetLoginStateAsync();
+        LoginStateService.SetLoginState(_loginState);
 
         await LoadQuizSelectionAsync();
 
