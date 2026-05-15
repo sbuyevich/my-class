@@ -1,0 +1,12 @@
+@namespace MyClass.Web.Components
+
+<MudStack AlignItems="AlignItems.Center"
+          Justify="Justify.Center"
+          Class="pa-4"
+          Style="@ShellStyle">
+    <MudPaper Class="pa-5"
+              Elevation="8"
+              Style="width: min(92vw, 28rem); max-height: 88vh; overflow-y: auto;">
+        @ChildContent
+    </MudPaper>
+</MudStack>
