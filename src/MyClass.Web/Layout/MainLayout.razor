@@ -3,6 +3,7 @@
 @implements IDisposable
 @inject IClassContextService ClassContextService
 @inject IClassContextState ClassContextState
+@inject ILoginStateService LoginStateService
 @inject ISessionStorageService SessionStorage
 @inject NavigationManager Navigation
 
@@ -13,7 +14,7 @@
 
 <MudLayout>
     <MudAppBar Elevation="1" Color="Color.Primary">
-        @if (!IsPublicAuthRoute())
+        @if (ShouldShowNavigation)
         {
             <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
         }
@@ -36,7 +37,7 @@
         }
     </MudAppBar>
 
-    @if (!IsPublicAuthRoute())
+    @if (ShouldShowNavigation)
     {
         <MudDrawer @bind-Open="_drawerOpen" Variant="DrawerVariant.Responsive" ClipMode="DrawerClipMode.Always" Elevation="1">
             <NavMenu CurrentClass="CurrentClass" />

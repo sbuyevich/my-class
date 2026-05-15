@@ -11,6 +11,10 @@ public partial class MainLayout
 
     private ClassContext? CurrentClass => ClassContextState.CurrentClass;
 
+    private bool ShouldShowNavigation =>
+        !IsPublicAuthRoute() &&
+        LoginStateService.CurrentLoginState?.IsTeacher == true;
+
     private string? ClassMessage =>
         ClassContextState.Result is { Succeeded: false } result
             ? result.Message
@@ -36,6 +40,7 @@ public partial class MainLayout
     protected override async Task OnInitializedAsync()
     {
         ClassContextState.Changed += OnClassContextChanged;
+        LoginStateService.LoginStateChanged += OnLoginStateChanged;
         Navigation.LocationChanged += OnLocationChanged;
 
         if (IsClassIndependentRoute())
@@ -135,6 +140,19 @@ public partial class MainLayout
         _ = InvokeAsync(StateHasChanged);
     }
 
+    private void OnLoginStateChanged()
+    {
+        _ = InvokeAsync(() =>
+        {
+            if (!ShouldShowNavigation)
+            {
+                _drawerOpen = false;
+            }
+
+            StateHasChanged();
+        });
+    }
+
     private bool IsPublicAuthRoute()
     {
         var path = GetRoutePath(Navigation.Uri);
@@ -160,6 +178,7 @@ public partial class MainLayout
     public void Dispose()
     {
         ClassContextState.Changed -= OnClassContextChanged;
+        LoginStateService.LoginStateChanged -= OnLoginStateChanged;
         Navigation.LocationChanged -= OnLocationChanged;
     }
 }

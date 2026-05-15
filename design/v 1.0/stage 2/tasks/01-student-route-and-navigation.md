@@ -2,19 +2,20 @@
 
 ## Goal
 
-Make `/student` the only normal student destination after login and in app navigation.
+Make `/student` the only normal student destination after login and remove student-facing menu navigation.
 
 ## Work
 
 - Confirm student login and registration redirects already use `/student` through `LandingRoutes`.
+- Remove the student-facing navigation menu entirely.
 - Remove the student-facing `Quiz Answer` navigation link that points to `/quiz-answer`.
-- Add or keep a student-facing navigation link to `/student` only if the current navigation pattern needs an explicit student landing link.
+- Do not add a replacement student navigation link to `/student`.
 - Preserve teacher navigation behavior.
 - Preserve class query parameter handling and current class context behavior.
 
 ## Deliverables
 
-- Student navigation no longer points to `/quiz-answer`.
+- Student users do not see an app navigation menu and menu button.
 - Student login and registration continue to land on `/student`.
 - Teacher navigation remains unchanged.
 
@@ -23,6 +24,7 @@ Make `/student` the only normal student destination after login and in app navig
 - Student login redirects to `/student`.
 - Student registration redirects to `/student`.
 - Stored student login state lands on `/student`.
+- Student users do not see menu links.
 - Student navigation does not expose `/quiz-answer`.
 - Teacher navigation still exposes teacher-only pages.
 

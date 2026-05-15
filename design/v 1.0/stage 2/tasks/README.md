@@ -12,6 +12,7 @@ Make `/student` the single student quiz experience and retire `/quiz-answer` as 
 ## Notes
 
 - Students should land on `/student` after login or registration.
+- Students should not see an app navigation menu.
 - `/student` should host the existing student quiz answer experience.
 - SignalR-driven quiz updates should continue to work from the Student page.
 - The old `/quiz-answer` route should not remain visible as normal student navigation.

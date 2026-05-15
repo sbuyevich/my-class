@@ -10,8 +10,6 @@ public partial class NavMenu
 
     private bool IsTeacher => LoginStateService.CurrentLoginState?.IsTeacher == true;
 
-    private bool IsStudent => LoginStateService.CurrentLoginState?.IsTeacher == false;
-
     protected override void OnInitialized()
     {
         LoginStateService.LoginStateChanged += OnLoginStateChanged;
