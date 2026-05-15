@@ -11,6 +11,7 @@ public sealed class QuizAnswerService(
     IDbContextFactory<ApplicationDbContext> dbContextFactory,
     IQuizContentService quizContentService,
     IActiveQuizSelectionService activeQuizSelectionService,
+    IQuizNotificationService quizNotificationService,
     IOptions<QuizOptions> quizOptions) : IQuizAnswerService
 {
     public async Task<Result<QuizAnswerPageState>> GetAnswerPageStateAsync(
@@ -73,15 +74,32 @@ public sealed class QuizAnswerService(
             .OrderByDescending(answer => answer.StartedAtUtc)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (current.IsExpired)
+        if (current.IsExpired && !current.IsAnswerRevealed)
         {
-            await FinishExpiredQuestionAsync(dbContext, current, currentClass.ClassId, cancellationToken);
+            var revealedAtUtc = await FinishExpiredQuestionAsync(dbContext, current, currentClass.ClassId, cancellationToken);
+            current = current with
+            {
+                AnswerRevealedAtUtc = revealedAtUtc,
+                IsInProgress = false,
+                Remaining = TimeSpan.Zero
+            };
 
-            return answer is not null && answer.Answer.Length > 0
-                ? Result<QuizAnswerPageState>.Success(
-                    CreateState(false, true, false, "Answer submitted. Waiting for the next question.", contentResult.Value.Title, current, progressItems: progressItems, activeQuizPath: activeQuizPath))
-                : Result<QuizAnswerPageState>.Success(
-                    CreateState(false, false, true, "This question has finished.", contentResult.Value.Title, current, progressItems: progressItems, activeQuizPath: activeQuizPath));
+            progressItems = await BuildQuestionProgressAsync(
+                dbContext,
+                contentResult.Value,
+                current,
+                studentResult.Value.Id,
+                cancellationToken);
+
+            answer = await dbContext.QuizAnswers
+                .AsNoTracking()
+                .Where(
+                    answer =>
+                        answer.QuestionIndex == current.QuestionIndex &&
+                        answer.QuestionKey == current.QuestionKey &&
+                        answer.StudentId == studentResult.Value.Id)
+                .OrderByDescending(answer => answer.StartedAtUtc)
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
         if (current.IsAnswerRevealed)
@@ -202,11 +220,23 @@ public sealed class QuizAnswerService(
             return Result<bool>.Failure("This question has finished.");
         }
 
+        var submittedAtUtc = DateTime.UtcNow;
+
         answer.Answer = selectedAnswerText;
-        answer.EndedAtUtc = DateTime.UtcNow;
+        answer.EndedAtUtc = submittedAtUtc;
         answer.IsCorrect = string.Equals(selectedAnswerText, answer.CorrectAnswer, StringComparison.Ordinal);
 
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        if (await RevealQuestionIfAllStudentsAnsweredAsync(
+            dbContext,
+            current,
+            currentClass.ClassId,
+            submittedAtUtc,
+            cancellationToken))
+        {
+            await quizNotificationService.NotifyQuizStateChangedAsync(currentClass, cancellationToken);
+        }
 
         return Result<bool>.Success(true, "Answer submitted.");
     }
@@ -300,7 +330,7 @@ public sealed class QuizAnswerService(
         var startedAtUtc = rows.Min(row => row.StartedAtUtc);
         var timeoutSeconds = questionContent?.TimeoutSeconds ?? quiz.TimeLimitSeconds;
         var hasOpenAnswers = rows.Any(row => row.EndedAtUtc is null);
-        var isExpired = hasOpenAnswers && now >= startedAtUtc.AddSeconds(timeoutSeconds);
+        var isExpired = now >= startedAtUtc.AddSeconds(timeoutSeconds);
         var answerRevealedAtUtc = rows
             .Where(row => row.AnswerRevealedAtUtc is not null)
             .Select(row => row.AnswerRevealedAtUtc)
@@ -479,7 +509,40 @@ public sealed class QuizAnswerService(
             : configuredMessage.Trim();
     }
 
-    private static async Task FinishExpiredQuestionAsync(
+    private static async Task<bool> RevealQuestionIfAllStudentsAnsweredAsync(
+        ApplicationDbContext dbContext,
+        CurrentQuestion current,
+        int classId,
+        DateTime revealedAtUtc,
+        CancellationToken cancellationToken)
+    {
+        var answers = await dbContext.QuizAnswers
+            .Where(answer =>
+                answer.Student != null &&
+                answer.Student.ClassId == classId &&
+                answer.QuestionIndex == current.QuestionIndex &&
+                answer.QuestionKey == current.QuestionKey)
+            .ToListAsync(cancellationToken);
+
+        if (answers.Count == 0 ||
+            answers.Any(answer => answer.EndedAtUtc is null) ||
+            answers.All(answer => answer.AnswerRevealedAtUtc is not null))
+        {
+            return false;
+        }
+
+        foreach (var answer in answers)
+        {
+            answer.AnswerRevealedAtUtc ??= revealedAtUtc;
+            answer.IsCorrect = answer.Answer.Length > 0 &&
+                string.Equals(answer.Answer, answer.CorrectAnswer, StringComparison.Ordinal);
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    private static async Task<DateTime> FinishExpiredQuestionAsync(
         ApplicationDbContext dbContext,
         CurrentQuestion current,
         int classId,
@@ -498,11 +561,13 @@ public sealed class QuizAnswerService(
         foreach (var answer in answers)
         {
             answer.EndedAtUtc ??= finishedAtUtc;
+            answer.AnswerRevealedAtUtc ??= finishedAtUtc;
             answer.IsCorrect = answer.Answer.Length > 0 &&
                 string.Equals(answer.Answer, answer.CorrectAnswer, StringComparison.Ordinal);
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+        return finishedAtUtc;
     }
 
     private sealed record CurrentQuestion(

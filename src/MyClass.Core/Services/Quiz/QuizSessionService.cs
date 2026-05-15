@@ -36,7 +36,7 @@ public sealed class QuizSessionService(
         var now = DateTime.UtcNow;
         var currentQuestion = await GetCurrentLiveQuestionAsync(dbContext, contentResult.Value, currentClass.ClassId, now, cancellationToken);
 
-        if (currentQuestion is not null && currentQuestion.HasOpenAnswers && currentQuestion.IsExpired)
+        if (currentQuestion is not null && currentQuestion.IsExpired && !currentQuestion.IsAnswerRevealed)
         {
             await FinishQuestionRowsAsync(dbContext, currentClass.ClassId, currentQuestion, now, cancellationToken);
             await quizNotificationService.NotifyQuizStateChangedAsync(currentClass, cancellationToken);
@@ -163,15 +163,15 @@ public sealed class QuizSessionService(
             return Result<bool>.Failure("No question is in progress.");
         }
 
-        if (!currentQuestion.HasOpenAnswers)
+        if (currentQuestion.IsAnswerRevealed)
         {
-            return Result<bool>.Success(true, "Question is already finished.");
+            return Result<bool>.Success(true, "Question is already finished and answer shown.");
         }
 
         await FinishQuestionRowsAsync(dbContext, currentClass.ClassId, currentQuestion, DateTime.UtcNow, cancellationToken);
         await quizNotificationService.NotifyQuizStateChangedAsync(currentClass, cancellationToken);
 
-        return Result<bool>.Success(true, "Question finished.");
+        return Result<bool>.Success(true, "Question finished and answer shown.");
     }
 
     public async Task<Result<bool>> ShowAnswerAsync(
@@ -242,7 +242,7 @@ public sealed class QuizSessionService(
             return Result<bool>.Failure("No quiz session is in progress.");
         }
 
-        if (currentQuestion.HasOpenAnswers && currentQuestion.IsExpired)
+        if (currentQuestion.IsExpired && !currentQuestion.IsAnswerRevealed)
         {
             await FinishQuestionRowsAsync(dbContext, currentClass.ClassId, currentQuestion, now, cancellationToken);
             await quizNotificationService.NotifyQuizStateChangedAsync(currentClass, cancellationToken);
@@ -346,6 +346,7 @@ public sealed class QuizSessionService(
         foreach (var answer in answers)
         {
             answer.EndedAtUtc ??= endedAtUtc;
+            answer.AnswerRevealedAtUtc ??= endedAtUtc;
             answer.IsCorrect = answer.Answer.Length > 0 &&
                 string.Equals(answer.Answer, answer.CorrectAnswer, StringComparison.Ordinal);
         }
