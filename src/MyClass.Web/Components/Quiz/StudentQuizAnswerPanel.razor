@@ -32,6 +32,7 @@ else
             @if (QuestionProgress.Count > 0)
             {
                 <div class="quiz-progress-row" aria-label="Quiz question progress">
+                    <MudText Typo="Typo.h6">Questions: </MudText>
                     @foreach (var item in QuestionProgress)
                     {
                         <span class="@GetProgressCircleClass(item)"

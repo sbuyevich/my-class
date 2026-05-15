@@ -49,7 +49,7 @@ public sealed class QuizAnswerService(
                 false,
                 false,
                 false,
-                "Waiting for the teacher to start a question.",
+                "Waiting for the teacher to start the first question.",
                 contentResult.Value.Title,
                 progressItems: CreateNeutralProgress(contentResult.Value),
                 activeQuizPath: activeQuizPath));
@@ -110,7 +110,7 @@ public sealed class QuizAnswerService(
         if (answer is null)
         {
             return Result<QuizAnswerPageState>.Success(
-                CreateState(false, false, false, "Waiting for the teacher to start a question.", contentResult.Value.Title, progressItems: progressItems, activeQuizPath: activeQuizPath));
+                CreateState(false, false, false, "Waiting for the teacher to start the first question.", contentResult.Value.Title, progressItems: progressItems, activeQuizPath: activeQuizPath));
         }
 
         if (answer.Answer.Length > 0)

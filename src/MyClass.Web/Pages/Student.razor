@@ -4,12 +4,7 @@
 <PageTitle>My Class</PageTitle>
 
 <RoleGate RequireTeacher="false" DeniedMessage="Only students can use the student landing page.">
-    <MudStack Spacing="3">
-        <div>
-            <MudText Typo="Typo.h4">Student</MudText>
-            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">@CurrentClass.ClassName</MudText>
-        </div>
-
+    <MudStack>
         <StudentQuizAnswerPanel CurrentClass="CurrentClass" />
     </MudStack>
 </RoleGate>
