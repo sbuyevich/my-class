@@ -235,26 +235,48 @@ public partial class TeacherQuizPanel
 
     private async Task RunActionAsync(Func<Task<Result<bool>>> action)
     {
-        _isWorking = true;
-        var result = await action();
-        await LoadStateAsync(showLoading: false);
-        StartPollingIfNeeded();
-        _isWorking = false;
+        try
+        {
+            _isWorking = true;
+            var result = await action();
+
+            if (!string.IsNullOrWhiteSpace(result.Message))
+            {
+                Snackbar.Add(result.Message, result.Succeeded ? Severity.Success : Severity.Error);
+            }
+
+            await LoadStateAsync(showLoading: false);
+            StartPollingIfNeeded();
+        }
+        finally
+        {
+            _isWorking = false;
+        }
     }
 
     private async Task FinishCurrentQuestionWithoutReloadAsync()
     {
         StopPolling();
 
-        _isWorking = true;
-        var result = await QuizSessionService.FinishCurrentQuestionAsync(_loginState, CurrentClass, _selectedQuizPath);
-
-        if (result.Succeeded)
+        try
         {
-            ApplyCurrentQuestionFinishedState();
-        }
+            _isWorking = true;
+            var result = await QuizSessionService.FinishCurrentQuestionAsync(_loginState, CurrentClass, _selectedQuizPath);
 
-        _isWorking = false;
+            if (!string.IsNullOrWhiteSpace(result.Message))
+            {
+                Snackbar.Add(result.Message, result.Succeeded ? Severity.Success : Severity.Error);
+            }
+
+            if (result.Succeeded)
+            {
+                ApplyCurrentQuestionFinishedState();
+            }
+        }
+        finally
+        {
+            _isWorking = false;
+        }
     }
 
     private void ApplyCurrentQuestionFinishedState()

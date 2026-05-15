@@ -144,10 +144,7 @@ public partial class MainLayout
     {
         _ = InvokeAsync(() =>
         {
-            if (!ShouldShowNavigation)
-            {
-                _drawerOpen = false;
-            }
+            _drawerOpen = LoginStateService.CurrentLoginState?.IsTeacher == true;
 
             StateHasChanged();
         });

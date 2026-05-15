@@ -19,6 +19,6 @@ public sealed class SignalRQuizNotificationService(IHubContext<QuizHub> hubConte
 
         await hubContext.Clients
             .Group(groupName)
-            .SendAsync(QuizHub.QuizStateChangedMethod, cancellationToken);
+            .SendAsync(QuizHub.QuizStateChangedMethod, cancellationToken: cancellationToken);
     }
 }
