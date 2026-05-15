@@ -8,8 +8,6 @@ public partial class NavMenu
     [Parameter]
     public ClassContext? CurrentClass { get; set; }
 
-    private bool IsSignedIn => LoginStateService.Current is not null;
-
     private bool IsTeacher => LoginStateService.Current?.IsTeacher == true;
 
     private bool IsStudent => LoginStateService.Current?.IsTeacher == false;
