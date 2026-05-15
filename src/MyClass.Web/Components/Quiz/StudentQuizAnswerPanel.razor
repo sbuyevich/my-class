@@ -18,15 +18,6 @@ else
         <MudStack Spacing="1">
             <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
                 <MudText Typo="Typo.h5">@QuizTitle</MudText>
-
-                @if (ShowTimer)
-                {
-                    <MudChip T="string"
-                             Color="@(IsTimerRunning ? Color.Primary : Color.Default)"
-                             Variant="Variant.Filled">
-                        Timer: @FormatRemaining(TimerRemaining)
-                    </MudChip>
-                }
             </MudStack>
 
             @if (QuestionProgress.Count > 0)
@@ -51,14 +42,22 @@ else
             }
             else
             {
-                <div class="quiz-status-message-row">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
                     <MudText Typo="Typo.subtitle1"
                              Color="Color.Secondary"
                              Align="Align.Center"
                              Class="quiz-status-message">
                         @StatusMessage
                     </MudText>
-                </div>
+                    @if (ShowTimer)
+                    {
+                        <MudChip T="string"
+                                 Color="@(IsTimerRunning ? Color.Primary : Color.Default)"
+                                 Variant="Variant.Filled">
+                            Timer: @FormatRemaining(TimerRemaining)
+                        </MudChip>
+                    }
+                </MudStack>
             }
         </MudStack>
 
