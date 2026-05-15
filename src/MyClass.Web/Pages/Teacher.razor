@@ -28,19 +28,19 @@
         {
             <MudGrid Spacing="3">
                 <MudItem xs="12" md="6">
-                    <MudPaper Elevation="1" Class="pa-4 teacher-landing-panel">
+                    <MudPaper Elevation="1" Class="pa-4" Style="min-height: 18rem;">
                         <MudStack Spacing="2">
-                            <MudText Typo="Typo.h6">Please enter this URL in your browser address bar:</MudText>
-                            <MudText Typo="Typo.h5" Class="teacher-student-url">@_studentEntryUrlResult.Value</MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Secondary">Please enter this URL in your browser address bar:</MudText>
+                            <MudText Typo="Typo.h5" Style="overflow-wrap: anywhere;">@_studentEntryUrlResult.Value</MudText>
                         </MudStack>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudPaper Elevation="1" Class="pa-4 teacher-landing-panel">
+                    <MudPaper Elevation="1" Class="pa-4" Style="min-height: 18rem;">
                         <MudStack Spacing="2" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.h6">Or scan the QR code below with your mobile device:</MudText>
-                            <img class="teacher-qr-code"
-                                 src="@_qrCodeDataUri"
+                            <MudText Typo="Typo.h6" Color="Color.Secondary">Or scan the QR code below with your mobile device:</MudText>
+                            <img src="@_qrCodeDataUri"
+                                 style="width: min(100%, 18rem); aspect-ratio: 1; image-rendering: pixelated;"
                                  alt="QR code for the student login URL" />
                         </MudStack>
                     </MudPaper>
