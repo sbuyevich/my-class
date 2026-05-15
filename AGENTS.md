@@ -30,7 +30,7 @@ Context7 workflow:
 - Follow existing project patterns before adding new abstractions.
 - Keep shared app logic in `MyClass.Core`.
 - Keep UI, routing, page state, and web-host behavior in `MyClass.Web`.
-- Use MudBlazor classes in `.razor` files, avoiding string CSS classes.
+- In `.razor` files, prefer MudBlazor components, parameters, and utility classes over custom string CSS classes.
 - Prefer existing service interfaces and dependency injection registration patterns.
 - For Razor components, use `.razor` plus `.razor.cs` code-behind where the repo already follows that pattern.
 - Keep changes small, reviewable, and focused on the requested feature or fix.
