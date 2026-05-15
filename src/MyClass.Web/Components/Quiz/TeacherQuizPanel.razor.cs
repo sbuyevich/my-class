@@ -239,12 +239,7 @@ public partial class TeacherQuizPanel
         {
             _isWorking = true;
             var result = await action();
-
-            if (!string.IsNullOrWhiteSpace(result.Message))
-            {
-                Snackbar.Add(result.Message, result.Succeeded ? Severity.Success : Severity.Error);
-            }
-
+           
             await LoadStateAsync(showLoading: false);
             StartPollingIfNeeded();
         }
@@ -262,12 +257,7 @@ public partial class TeacherQuizPanel
         {
             _isWorking = true;
             var result = await QuizSessionService.FinishCurrentQuestionAsync(_loginState, CurrentClass, _selectedQuizPath);
-
-            if (!string.IsNullOrWhiteSpace(result.Message))
-            {
-                Snackbar.Add(result.Message, result.Succeeded ? Severity.Success : Severity.Error);
-            }
-
+          
             if (result.Succeeded)
             {
                 ApplyCurrentQuestionFinishedState();
