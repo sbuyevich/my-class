@@ -3,6 +3,7 @@ bin/
 obj/
 out/
 .build/
+dist/
 
 # User-specific files
 *.user
