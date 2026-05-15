@@ -13,38 +13,61 @@
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="1" Color="Color.Primary">
-        @if (ShouldShowNavigation)
-        {
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
-        }
-        <MudText Typo="Typo.h6">My Class</MudText>
-        <MudSpacer />
-        <AppGreeting />
-        <MudSpacer />
-
-        @if (CurrentClass is not null && !IsClassIndependentRoute())
-        {
-            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                <MudChip T="string" Size="Size.Large" Color="Color.Info">@CurrentClass.ClassName</MudChip>
-                in
-                <MudChip T="string" Size="Size.Large" Color="Color.Secondary">@CurrentClass.SchoolName</MudChip>
-            </MudStack>
-        }
-        else if (!string.IsNullOrWhiteSpace(ClassMessage))
-        {
-            <MudText Typo="Typo.body2" Color="Color.Inherit">@ClassMessage</MudText>
-        }
-    </MudAppBar>
-
-    @if (ShouldShowNavigation)
+    @if (!string.IsNullOrWhiteSpace(ClassMessage))
     {
+        <MudText Typo="Typo.body2" Color="Color.Inherit">@ClassMessage</MudText>
+    }
+    else if (ShouldShowNavigation)
+    {
+        <MudAppBar Elevation="1" Color="Color.Primary">
+
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
+
+            <MudText Typo="Typo.h6">My Class</MudText>
+            <MudSpacer />
+            <AppGreeting />
+            <MudSpacer />
+
+            @if (CurrentClass is not null && !IsClassIndependentRoute())
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <MudChip T="string" Size="Size.Large" Color="Color.Info">@CurrentClass.ClassName</MudChip>
+                    in
+                    <MudChip T="string" Size="Size.Large" Color="Color.Secondary">@CurrentClass.SchoolName</MudChip>
+                </MudStack>
+            }
+        </MudAppBar>
         <MudDrawer @bind-Open="_drawerOpen" Variant="DrawerVariant.Responsive" ClipMode="DrawerClipMode.Always" Elevation="1">
             <NavMenu CurrentClass="CurrentClass" />
         </MudDrawer>
     }
-
-    <MudMainContent>
+    @if (ShouldShowNavigation)
+    {
+        <MudMainContent>
+            <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-6">
+                @if (IsClassIndependentRoute())
+                {
+                    @Body
+                }
+                else if (ClassContextState.Result is null)
+                {
+                    <LoadingIndicator Text="Loading class..." />
+                }
+                else if (!ClassContextState.Result.Succeeded)
+                {
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Filled">@ClassContextState.Result.Message</MudAlert>
+                }
+                else
+                {
+                    <CascadingValue Value="CurrentClass">
+                        @Body
+                    </CascadingValue>
+                }
+            </MudContainer>
+        </MudMainContent>
+    }
+    else
+    {
         <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-6">
             @if (IsClassIndependentRoute())
             {
@@ -65,7 +88,7 @@
                 </CascadingValue>
             }
         </MudContainer>
-    </MudMainContent>
+    }
 </MudLayout>
 
 @if (!IsPublicAuthRoute() && !IsClassIndependentRoute())
