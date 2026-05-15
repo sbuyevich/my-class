@@ -16,11 +16,21 @@ Use Context7 MCP to fetch current documentation whenever asked about a library, 
 
 Always start with Context7 library resolution unless the user provides an exact `/org/project` library ID. Answer from the fetched docs, not memory, when current API or configuration details matter.
 
+Do not use Context7 for refactoring, writing scripts from scratch, debugging business logic, code review, or general programming concepts.
+
+Context7 workflow:
+
+1. Start with `resolve-library-id` using the library name and the user's question unless the user provides an exact library ID in `/org/project` format.
+2. Pick the best match by exact name match, description relevance, code snippet count, source reputation, and benchmark score. If results do not look right, retry with alternate library names or rephrased queries.
+3. Use `query-docs` with the selected library ID and the user's full question, not isolated keywords.
+4. Answer using the fetched documentation.
+
 ## Coding Conventions
 
 - Follow existing project patterns before adding new abstractions.
 - Keep shared app logic in `MyClass.Core`.
 - Keep UI, routing, page state, and web-host behavior in `MyClass.Web`.
+- Use MudBlazor classes in `.razor` files, avoiding string CSS classes.
 - Prefer existing service interfaces and dependency injection registration patterns.
 - For Razor components, use `.razor` plus `.razor.cs` code-behind where the repo already follows that pattern.
 - Keep changes small, reviewable, and focused on the requested feature or fix.
