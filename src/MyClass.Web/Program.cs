@@ -9,43 +9,32 @@ using MyClass.Web.App;
 using MyClass.Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
 
 // Add services to the container.
-builder.Services.AddRazorComponents()
+services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddSignalR();
-builder.Services.AddMudServices();
+services.AddSignalR();
+services.AddMudServices();
 
-builder.Services.AddDataProtection() // do i need it?
+services.AddDataProtection() // do i need it?
     .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, ".keys")))
     .SetApplicationName("MyClass");
 
 // database
-builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+services.AddDbContextFactory<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // options
-builder.Services.Configure<TeacherOptions>(builder.Configuration.GetSection("Teacher"));
-builder.Services.Configure<QuizOptions>(builder.Configuration.GetSection("Quiz"));
+services.Configure<TeacherOptions>(builder.Configuration.GetSection("Teacher"));
+services.Configure<QuizOptions>(builder.Configuration.GetSection("Quiz"));
+
+services.AddCoreServices();
 
 // services
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ILoginStateService, LoginStateService>();
-builder.Services.AddScoped<IClassContextService, ClassContextService>();
-builder.Services.AddScoped<IClassContextState, ClassContextState>();
-builder.Services.AddScoped<IQuizContentService, QuizContentService>();
-builder.Services.AddScoped<IQuizNotificationService, SignalRQuizNotificationService>();
-builder.Services.AddScoped<IQuizSessionService, QuizSessionService>();
-builder.Services.AddScoped<IQuizAnswerService, QuizAnswerService>();
-builder.Services.AddScoped<IQuizResultService, QuizResultService>();
-builder.Services.AddScoped<IStudentService, StudentService>();
-builder.Services.AddScoped<ISchoolClassService, SchoolClassService>();
-builder.Services.AddScoped<ISessionStorageService, SessionStorageService>();
-builder.Services.AddSingleton<IUrlService, UrlService>();
-builder.Services.AddSingleton<IQrCodeService, QrCodeService>();
-builder.Services.AddSingleton<IActiveQuizSelectionService, ActiveQuizSelectionService>();
-builder.Services.AddSingleton<IPasswordHashService, PasswordHashService>();
+services.AddScoped<IQuizNotificationService, SignalRQuizNotificationService>();
+
 
 var app = builder.Build();
 
