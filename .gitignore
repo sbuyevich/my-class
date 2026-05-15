@@ -54,7 +54,7 @@ Thumbs.db
 .dotnet-home/
 .agents/
 .keys/
-.dotnet/
+src/.dotnet/
 
 /my-class/src/artifacts/
 .codex-artifacts/
