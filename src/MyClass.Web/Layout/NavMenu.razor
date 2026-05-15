@@ -5,11 +5,6 @@
 <MudStack Spacing="0" Class="pa-3">
        
     <MudNavMenu Dense="true" Rounded="true">
-        @if (IsSignedIn)
-        {
-            <MudNavLink Href="/home" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-        }
-
         @if (IsStudent)
         {
             <MudNavLink Href="/quiz-answer" Icon="@Icons.Material.Filled.CheckCircle">Quiz Answer</MudNavLink>

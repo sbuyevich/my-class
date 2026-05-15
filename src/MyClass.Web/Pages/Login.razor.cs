@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using MyClass.Core.Models;
+using MyClass.Web.App;
 
 namespace  MyClass.Web.Pages;
 
@@ -23,12 +24,12 @@ public partial class Login
         }
 
         LoginStateService.Set(state);
-        Navigation.NavigateTo("/home");
+        Navigation.NavigateTo(LandingRoutes.For(state));
     }
 
     private Task HandleSucceededAsync(LoginState state)
     {
-        Navigation.NavigateTo("/home");
+        Navigation.NavigateTo(LandingRoutes.For(state));
 
         return Task.CompletedTask;
     }

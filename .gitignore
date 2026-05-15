@@ -9,6 +9,7 @@ out/
 *.userosscache
 *.lscache
 *.sln.docstates
+*.lscache
 
 # IDE folders
 .vs/
