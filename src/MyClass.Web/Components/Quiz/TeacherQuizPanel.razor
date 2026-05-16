@@ -37,8 +37,9 @@ else if (_stateResult.Value is not null)
 {
     var state = _stateResult.Value;
 
-    <MudGrid Spacing="3" Class="teacher-quiz-grid">
-        <MudItem xs="12" md="8">
+    <MudGrid Spacing="3" Class="teacher-quiz-grid" AlignItems="AlignItems.Center"
+             Justify="Justify.Center">
+        <MudItem md="10">
             <MudStack Spacing="3">
                 @if (_availableQuizzesResult is not null && !_availableQuizzesResult.Succeeded)
                 {
@@ -103,7 +104,7 @@ else if (_stateResult.Value is not null)
                                            StartIcon="@Icons.Material.Filled.Visibility"
                                            Disabled="@(_isWorking || state.CurrentQuestion is null || state.CurrentQuestion.IsAnswerRevealed)"
                                            OnClick="ShowAnswerAsync">
-                                    Show Answer
+                                    Answer
                                 </MudButton>
                                 <MudButton Variant="Variant.Filled"
                                            Color="Color.Primary"
@@ -168,7 +169,7 @@ else if (_stateResult.Value is not null)
             </MudStack>
         </MudItem>
 
-        <MudItem xs="12" md="4">
+        <MudItem md="10">
             <MudTable T="QuizStudentAnswerStatus"
                       Items="state.Students"
                       Dense="true"
