@@ -480,12 +480,17 @@ public sealed class QuizAnswerService(
                 var isPast = question.Index < currentQuestion.QuestionIndex;
                 answers.TryGetValue(question.Index, out var answer);
 
-                var result = GetQuestionProgressResult(answer?.Answer, answer?.EndedAtUtc, answer?.AnswerRevealedAtUtc, answer?.IsCorrect, isPast, isCurrent);
+                var result = GetQuestionProgressResult(
+                    answer?.Answer,
+                    answer?.EndedAtUtc,
+                    answer?.AnswerRevealedAtUtc,
+                    answer?.IsCorrect,
+                    isPast);
 
                 return new QuizQuestionProgressItem(
                     question.Index,
                     isCurrent,
-                    isPast || isCurrent,
+                    question.Index <= currentQuestion.QuestionIndex,
                     result);
             })
             .ToList();
@@ -496,12 +501,18 @@ public sealed class QuizAnswerService(
         DateTime? endedAtUtc,
         DateTime? answerRevealedAtUtc,
         bool? isCorrect,
-        bool isPast,
-        bool isCurrent)
+        bool isPast)
     {
-        if (!isPast && !(isCurrent && answerRevealedAtUtc is not null))
+        if (answerRevealedAtUtc is null && !isPast)
         {
-            return QuizQuestionProgressResult.Neutral;
+            if (!string.IsNullOrEmpty(answer))
+            {
+                return QuizQuestionProgressResult.Answered;
+            }
+
+            return endedAtUtc is not null
+                ? QuizQuestionProgressResult.Missed
+                : QuizQuestionProgressResult.Neutral;
         }
 
         if (endedAtUtc is null)

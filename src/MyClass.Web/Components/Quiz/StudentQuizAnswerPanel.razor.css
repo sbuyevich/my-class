@@ -28,6 +28,11 @@
     background: var(--mud-palette-surface);
 }
 
+.quiz-progress-circle-answered {
+    background: #d8ecff;
+    border-color: #7db7ef;
+}
+
 .quiz-progress-circle-correct {
     background: #dff3df;
     border-color: #9bd29b;

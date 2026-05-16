@@ -378,6 +378,7 @@ public partial class StudentQuizAnswerPanel
 
         classes.Add(item.Result switch
         {
+            QuizQuestionProgressResult.Answered => "quiz-progress-circle-answered",
             QuizQuestionProgressResult.Correct => "quiz-progress-circle-correct",
             QuizQuestionProgressResult.Incorrect => "quiz-progress-circle-incorrect",
             QuizQuestionProgressResult.Missed => "quiz-progress-circle-missed",
@@ -396,6 +397,7 @@ public partial class StudentQuizAnswerPanel
     {
         return item.Result switch
         {
+            QuizQuestionProgressResult.Answered => $"Question {item.QuestionIndex + 1}: answered",
             QuizQuestionProgressResult.Correct => $"Question {item.QuestionIndex + 1}: correct",
             QuizQuestionProgressResult.Incorrect => $"Question {item.QuestionIndex + 1}: incorrect",
             QuizQuestionProgressResult.Missed => $"Question {item.QuestionIndex + 1}: missed",

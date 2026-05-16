@@ -30,6 +30,7 @@ public sealed record QuizQuestionProgressItem(
 public enum QuizQuestionProgressResult
 {
     Neutral,
+    Answered,
     Correct,
     Incorrect,
     Missed
