@@ -1,6 +1,6 @@
 # My Class Teacher Guide
 
-This folder contains the Windows version of My Class.
+This folder contains the MacOS version of My Class.
 
 ## Run The App
 
