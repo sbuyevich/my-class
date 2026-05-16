@@ -23,6 +23,7 @@ public partial class TeacherQuizPanel
     private string? _imageMessage;
     private bool _isLoading = true;
     private bool _isWorking;
+    private bool _autoNext;
     private bool _quizSelectionLoaded;
     private bool HasSelectedQuiz => !string.IsNullOrWhiteSpace(_selectedQuizPath);
 
@@ -44,6 +45,8 @@ public partial class TeacherQuizPanel
         _loadedAnswerRevealState = null;
         _imageDataUri = null;
         _imageMessage = null;
+        _autoNext = false;
+        AutoNextStateService.ClearAutoNext(CurrentClass.ClassId);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -156,7 +159,7 @@ public partial class TeacherQuizPanel
 
     private void StartPollingIfNeeded()
     {
-        if (_stateResult?.Value?.CurrentQuestion?.IsInProgress == true)
+        if (_stateResult?.Value?.CurrentQuestion?.IsInProgress == true || ShouldAutoMoveNext())
         {
             StartPolling();
             return;
@@ -185,13 +188,29 @@ public partial class TeacherQuizPanel
                 {
                     if (IsCurrentQuestionTimerExpired())
                     {
-                        await FinishCurrentQuestionWithoutReloadAsync();
+                        if (ShouldAutoMoveNextFromExpiredQuestion())
+                        {
+                            await MoveNextQuestionWithoutRevealAsync();
+                        }
+                        else
+                        {
+                            await FinishCurrentQuestionWithoutReloadAsync();
+                        }
+
                         StateHasChanged();
                         return;
                     }
 
                     await LoadStateAsync(showLoading: false);
-                    StartPollingIfNeeded();
+                    if (ShouldAutoMoveNext())
+                    {
+                        await MoveNextQuestionWithoutRevealAsync();
+                    }
+                    else
+                    {
+                        StartPollingIfNeeded();
+                    }
+
                     StateHasChanged();
                 });
             }
@@ -225,6 +244,17 @@ public partial class TeacherQuizPanel
         _loadedImageQuestionKey = null;
         _loadedAnswerRevealState = null;
         await RunActionAsync(() => QuizSessionService.MoveNextQuestionAsync(_loginState, CurrentClass, _selectedQuizPath));
+    }
+
+    private async Task MoveNextQuestionWithoutRevealAsync()
+    {
+        _loadedImageQuestionKey = null;
+        _loadedAnswerRevealState = null;
+        await RunActionAsync(() => QuizSessionService.MoveNextQuestionAsync(
+            _loginState,
+            CurrentClass,
+            _selectedQuizPath,
+            revealCurrentQuestion: false));
     }
 
     private async Task ShowAnswerAsync()
@@ -369,6 +399,35 @@ public partial class TeacherQuizPanel
         return question is not null && question.QuestionIndex >= question.QuestionCount - 1;
     }
 
+    private void HandleAutoNextChanged(bool isEnabled)
+    {
+        _autoNext = isEnabled;
+        AutoNextStateService.SetAutoNextEnabled(CurrentClass.ClassId, isEnabled);
+        StartPollingIfNeeded();
+    }
+
+    private bool ShouldAutoMoveNext()
+    {
+        var question = _stateResult?.Value?.CurrentQuestion;
+
+        return _autoNext &&
+            !_isWorking &&
+            question is not null &&
+            !question.IsInProgress &&
+            !IsLastQuestion(question);
+    }
+
+    private bool ShouldAutoMoveNextFromExpiredQuestion()
+    {
+        var question = _stateResult?.Value?.CurrentQuestion;
+
+        return _autoNext &&
+            !_isWorking &&
+            question is not null &&
+            question.IsInProgress &&
+            !IsLastQuestion(question);
+    }
+
     private static Color GetStatusColor(QuizStudentAnswerStatus status)
     {
         if (status.HasAnswered)
@@ -439,5 +498,6 @@ public partial class TeacherQuizPanel
     public void Dispose()
     {
         StopPolling();
+        AutoNextStateService.ClearAutoNext(CurrentClass.ClassId);
     }
 }

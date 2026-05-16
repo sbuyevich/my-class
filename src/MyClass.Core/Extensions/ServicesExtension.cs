@@ -21,6 +21,7 @@ public static class ServicesExtension
         services.AddSingleton<IUrlService, UrlService>();
         services.AddSingleton<IQrCodeService, QrCodeService>();
         services.AddSingleton<IActiveQuizSelectionService, ActiveQuizSelectionService>();
+        services.AddSingleton<IQuizAutoNextStateService, QuizAutoNextStateService>();
 
         return services;
     }

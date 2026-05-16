@@ -217,6 +217,7 @@ public sealed class QuizSessionService(
         LoginState? loginState,
         ClassContext currentClass,
         string? quizFolderPath = null,
+        bool revealCurrentQuestion = true,
         CancellationToken cancellationToken = default)
     {
         var authorizationMessage = ValidateTeacherAccess(loginState, currentClass);
@@ -244,7 +245,13 @@ public sealed class QuizSessionService(
 
         if (currentQuestion.IsExpired && !currentQuestion.IsAnswerRevealed)
         {
-            await FinishQuestionRowsAsync(dbContext, currentClass.ClassId, currentQuestion, now, cancellationToken);
+            await FinishQuestionRowsAsync(
+                dbContext,
+                currentClass.ClassId,
+                currentQuestion,
+                now,
+                cancellationToken,
+                revealAnswer: revealCurrentQuestion);
             await quizNotificationService.NotifyQuizStateChangedAsync(currentClass, cancellationToken);
             currentQuestion = await GetCurrentLiveQuestionAsync(dbContext, contentResult.Value, currentClass.ClassId, now, cancellationToken);
         }
@@ -333,7 +340,8 @@ public sealed class QuizSessionService(
         int classId,
         LiveQuestionState question,
         DateTime endedAtUtc,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool revealAnswer = true)
     {
         var answers = await dbContext.QuizAnswers
             .Where(answer =>
@@ -346,7 +354,11 @@ public sealed class QuizSessionService(
         foreach (var answer in answers)
         {
             answer.EndedAtUtc ??= endedAtUtc;
-            answer.AnswerRevealedAtUtc ??= endedAtUtc;
+            if (revealAnswer)
+            {
+                answer.AnswerRevealedAtUtc ??= endedAtUtc;
+            }
+
             answer.IsCorrect = answer.Answer.Length > 0 &&
                 string.Equals(answer.Answer, answer.CorrectAnswer, StringComparison.Ordinal);
         }

@@ -11,6 +11,7 @@ public sealed class QuizAnswerService(
     IDbContextFactory<ApplicationDbContext> dbContextFactory,
     IQuizContentService quizContentService,
     IActiveQuizSelectionService activeQuizSelectionService,
+    IQuizAutoNextStateService quizAutoNextStateService,
     IQuizNotificationService quizNotificationService,
     IOptions<QuizOptions> quizOptions) : IQuizAnswerService
 {
@@ -266,11 +267,13 @@ public sealed class QuizAnswerService(
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        if (await RevealQuestionIfAllStudentsAnsweredAsync(
+        var autoNextEnabled = quizAutoNextStateService.IsAutoNextEnabled(currentClass.ClassId);
+        if (await CompleteQuestionIfAllStudentsAnsweredAsync(
             dbContext,
             current,
             currentClass.ClassId,
             submittedAtUtc,
+            revealAnswer: !autoNextEnabled,
             cancellationToken))
         {
             await quizNotificationService.NotifyQuizStateChangedAsync(currentClass, cancellationToken);
@@ -547,11 +550,12 @@ public sealed class QuizAnswerService(
             : configuredMessage.Trim();
     }
 
-    private static async Task<bool> RevealQuestionIfAllStudentsAnsweredAsync(
+    private static async Task<bool> CompleteQuestionIfAllStudentsAnsweredAsync(
         ApplicationDbContext dbContext,
         CurrentQuestion current,
         int classId,
-        DateTime revealedAtUtc,
+        DateTime completedAtUtc,
+        bool revealAnswer,
         CancellationToken cancellationToken)
     {
         var answers = await dbContext.QuizAnswers
@@ -564,19 +568,27 @@ public sealed class QuizAnswerService(
 
         if (answers.Count == 0 ||
             answers.Any(answer => answer.EndedAtUtc is null) ||
-            answers.All(answer => answer.AnswerRevealedAtUtc is not null))
+            answers.Any(answer => answer.AnswerRevealedAtUtc is not null))
         {
             return false;
         }
 
         foreach (var answer in answers)
         {
-            answer.AnswerRevealedAtUtc ??= revealedAtUtc;
+            if (revealAnswer)
+            {
+                answer.AnswerRevealedAtUtc = completedAtUtc;
+            }
+
             answer.IsCorrect = answer.Answer.Length > 0 &&
                 string.Equals(answer.Answer, answer.CorrectAnswer, StringComparison.Ordinal);
         }
 
-        await dbContext.SaveChangesAsync(cancellationToken);
+        if (revealAnswer)
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
         return true;
     }
 

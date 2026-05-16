@@ -5,6 +5,7 @@
 @inject ISessionStorageService SessionStorage
 @inject IQuizContentService QuizContentService
 @inject IActiveQuizSelectionService ActiveQuizSelectionService
+@inject IQuizAutoNextStateService AutoNextStateService
 @inject IQuizNotificationService QuizNotificationService
 @inject IQuizSessionService QuizSessionService
 @inject IOptions<QuizOptions> QuizOptions
@@ -107,13 +108,21 @@ else if (_stateResult.Value is not null)
                                            OnClick="ShowAnswerAsync">
                                     Show Answer
                                 </MudButton>
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Primary"
-                                           EndIcon="@Icons.Material.Filled.SkipNext"
-                                           Disabled="@(_isWorking || state.CurrentQuestion?.IsInProgress == true || IsLastQuestion(state.CurrentQuestion))"
-                                           OnClick="MoveNextQuestionAsync">
-                                    Next
-                                </MudButton>
+                                <MudStack Spacing="0" AlignItems="AlignItems.Center">
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               EndIcon="@Icons.Material.Filled.SkipNext"
+                                               Disabled="@(_isWorking || state.CurrentQuestion?.IsInProgress == true || IsLastQuestion(state.CurrentQuestion))"
+                                               OnClick="MoveNextQuestionAsync">
+                                        Next
+                                    </MudButton>
+                                    <MudSwitch T="bool"
+                                               Value="_autoNext"
+                                               ValueChanged="HandleAutoNextChanged"
+                                               Color="Color.Primary"
+                                               Disabled="@(_isWorking || IsLastQuestion(state.CurrentQuestion))"
+                                               Label="Auto Next" />
+                                </MudStack>
                             }
                         </MudStack>
                     </MudStack>
