@@ -22,6 +22,24 @@ MyClass is a .NET 10 Blazor web app for running classroom quizzes. Teachers can 
 - MudBlazor UI components.
 - Windows and macOS publish targets with packaged `dist-win.zip` and `dist-macos.zip`.
 
+## Download And Run Release Zip Files
+
+1. Open the [MyClass releases page](https://github.com/sbuyevich/my-class/releases).
+2. Open the latest release.
+3. Download the zip file for the teacher computer:
+   - `dist-win.zip` for Windows.
+   - `dist-macos.zip` for macOS.
+4. Unzip the downloaded file.
+5. Open the unzipped `My Class` folder.
+6. Open the included `README.md` or `README.pdf` teacher guide.
+7. Run the app from that folder by double-clicking:
+
+```bat
+demo.bat
+```
+
+The launcher starts the app with class code `demo`, opens the teacher computer browser, and uses port `5555`. The app home page shows the URL and QR code students can use from devices on the same Wi-Fi/LAN.
+
 ## Network Requirements
 
 MyClass is designed for local classroom use without cloud hosting. Student devices must be able to reach the teacher's computer over the same LAN/Wi-Fi network.
@@ -69,30 +87,6 @@ design/                        Product, database, stage, and launch notes
 - PowerShell for publish/package scripts
 
 The app targets `net10.0` and uses EF Core SQLite, SignalR, and MudBlazor.
-
-## Run Locally
-
-From the repository root:
-
-```powershell
-dotnet build .\src\MyClass.slnx
-dotnet run --project .\src\MyClass.Web\MyClass.Web.csproj --launch-profile http
-```
-
-Open:
-
-```text
-http://localhost:5555/?c=demo
-```
-
-The seeded demo class code is `demo`. The default teacher credentials are configured in `src/MyClass.Web/appsettings.json`:
-
-```text
-Username: t
-Password: t
-```
-
-Students can register from the login screen while using a valid class code.
 
 ## Quiz Content
 
@@ -169,7 +163,7 @@ The app uses SQLite with this default connection string:
 
 On startup, `DatabaseInitializer` creates missing tables/columns and seeds a demo school/class when the database is empty.
 
-## Create and Release Zip Files 
+## Create And Release Zip Files 
 
 From a Windows terminal at the repository root, run:
 
@@ -186,21 +180,6 @@ Upload zip files in [release](https://github.com/sbuyevich/my-class/releases)
 
 Each zip contains a top-level folder named `My Class`.
 
-## Run Packaged Windows App
-
-After publishing, launch the packaged Windows app with:
-
-```bat
-.\dist-win\scripts\run.bat demo
-```
-
-or:
-
-```powershell
-.\dist-win\scripts\run.ps1 -ClassCode demo -Port 5555
-```
-
-The launcher binds the app to a local network IPv4 address, opens the browser with `?c=<class-code>`, and stores the app PID in `dist-win/myclass.pid`.
 
 ## Development Notes
 
