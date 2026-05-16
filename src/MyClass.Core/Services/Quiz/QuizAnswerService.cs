@@ -34,7 +34,12 @@ public sealed class QuizAnswerService(
 
         if (!contentResult.Succeeded || contentResult.Value is null)
         {
-            return Result<QuizAnswerPageState>.Success(CreateState(false, false, false, contentResult.Message, activeQuizPath: activeQuizPath));
+            return Result<QuizAnswerPageState>.Success(value: CreateState(
+                hasInProgressAnswer: false,
+                alreadyAnswered: false,
+                failedNoAnswer: false,
+                message: contentResult.Message,
+                activeQuizPath: activeQuizPath));
         }
 
         var current = await GetCurrentQuestionAsync(
@@ -46,12 +51,12 @@ public sealed class QuizAnswerService(
 
         if (current is null)
         {
-            return Result<QuizAnswerPageState>.Success(CreateState(
-                false,
-                false,
-                false,
-                "Waiting for the teacher to start the first question.",
-                contentResult.Value.Title,
+            return Result<QuizAnswerPageState>.Success(value: CreateState(
+                hasInProgressAnswer: false,
+                alreadyAnswered: false,
+                failedNoAnswer: false,
+                message: "Waiting for the teacher to start the first question.",
+                quizTitle: contentResult.Value.Title,
                 progressItems: CreateNeutralProgress(contentResult.Value),
                 activeQuizPath: activeQuizPath));
         }
@@ -107,44 +112,77 @@ public sealed class QuizAnswerService(
             var hasAnswered = answer is not null && answer.Answer.Length > 0;
             var isCorrect = hasAnswered ? answer!.IsCorrect : null as bool?;
 
-            return Result<QuizAnswerPageState>.Success(
+            return Result<QuizAnswerPageState>.Success(value:
                 CreateState(
-                    false,
-                    hasAnswered,
-                    !hasAnswered,
-                    GetRevealMessage(isCorrect),
-                    contentResult.Value.Title,
-                    current,
-                    answerChoices,
-                    progressItems,
-                    isCorrect,
-                    hasAnswered ? answer!.EndedAtUtc : null,
-                    hasAnswered && answer!.EndedAtUtc is not null
+                    hasInProgressAnswer: false,
+                    alreadyAnswered: hasAnswered,
+                    failedNoAnswer: !hasAnswered,
+                    message: GetRevealMessage(isCorrect),
+                    quizTitle: contentResult.Value.Title,
+                    currentQuestion: current,
+                    answerChoices: answerChoices,
+                    progressItems: progressItems,
+                    isCorrect: isCorrect,
+                    answeredAtUtc: hasAnswered ? answer!.EndedAtUtc : null,
+                    answerElapsed: hasAnswered && answer!.EndedAtUtc is not null
                         ? answer.EndedAtUtc.Value - answer.StartedAtUtc
                         : null,
-                    activeQuizPath));
+                    activeQuizPath: activeQuizPath));
         }
 
         if (answer is null)
         {
-            return Result<QuizAnswerPageState>.Success(
-                CreateState(false, false, false, "Waiting for the teacher to start the first question.", contentResult.Value.Title, progressItems: progressItems, activeQuizPath: activeQuizPath));
+            return Result<QuizAnswerPageState>.Success(value:
+                CreateState(
+                    hasInProgressAnswer: false,
+                    alreadyAnswered: false,
+                    failedNoAnswer: false,
+                    message: "Waiting for the teacher to start the first question.",
+                    quizTitle: contentResult.Value.Title,
+                    progressItems: progressItems,
+                    activeQuizPath: activeQuizPath));
         }
 
         if (answer.Answer.Length > 0)
         {
-            return Result<QuizAnswerPageState>.Success(
-                CreateState(false, true, false, $"Answer {answer.Answer} was submitted. Waiting for the next question.", contentResult.Value.Title, current, answerChoices, progressItems, activeQuizPath: activeQuizPath));
+            return Result<QuizAnswerPageState>.Success(value:
+                CreateState(
+                    hasInProgressAnswer: false,
+                    alreadyAnswered: true,
+                    failedNoAnswer: false,
+                    message: $"Answer {answer.Answer} was submitted. Waiting for the next question.",
+                    quizTitle: contentResult.Value.Title,
+                    currentQuestion: current,
+                    answerChoices: answerChoices,
+                    progressItems: progressItems,
+                    activeQuizPath: activeQuizPath));
         }
 
         if (answer.EndedAtUtc is not null)
         {
-            return Result<QuizAnswerPageState>.Success(
-                CreateState(false, false, true, "This question has finished.", contentResult.Value.Title, current, progressItems: progressItems, activeQuizPath: activeQuizPath));
+            return Result<QuizAnswerPageState>.Success(value:
+                CreateState(
+                    hasInProgressAnswer: false,
+                    alreadyAnswered: false,
+                    failedNoAnswer: true,
+                    message: "This question has finished.",
+                    quizTitle: contentResult.Value.Title,
+                    currentQuestion: current,
+                    progressItems: progressItems,
+                    activeQuizPath: activeQuizPath));
         }
 
-        return Result<QuizAnswerPageState>.Success(
-            CreateState(true, false, false, "Choose an answer.", contentResult.Value.Title, current, answerChoices, progressItems, activeQuizPath: activeQuizPath));
+        return Result<QuizAnswerPageState>.Success(value:
+            CreateState(
+                hasInProgressAnswer: true,
+                alreadyAnswered: false,
+                failedNoAnswer: false,
+                message: "Choose an answer.",
+                quizTitle: contentResult.Value.Title,
+                currentQuestion: current,
+                answerChoices: answerChoices,
+                progressItems: progressItems,
+                activeQuizPath: activeQuizPath));
     }
 
     public async Task<Result<bool>> SubmitAnswerAsync(

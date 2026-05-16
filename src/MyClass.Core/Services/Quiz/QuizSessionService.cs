@@ -446,17 +446,17 @@ public sealed class QuizSessionService(
             : TimeSpan.Zero;
 
         return new LiveQuestionState(
-            latestQuestion.QuestionIndex,
-            latestQuestion.QuestionKey,
-            questionContent?.Title ?? latestQuestion.QuestionText,
-            timeoutSeconds,
-            startedAtUtc,
-            finishedAtUtc,
-            answerRevealedAtUtc,
-            hasOpenAnswers,
-            isExpired,
-            isInProgress,
-            remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero);
+            QuestionIndex: latestQuestion.QuestionIndex,
+            QuestionKey: latestQuestion.QuestionKey,
+            Title: questionContent?.Title ?? latestQuestion.QuestionText,
+            TimeoutSeconds: timeoutSeconds,
+            StartedAtUtc: startedAtUtc,
+            FinishedAtUtc: finishedAtUtc,
+            AnswerRevealedAtUtc: answerRevealedAtUtc,
+            HasOpenAnswers: hasOpenAnswers,
+            IsExpired: isExpired,
+            IsInProgress: isInProgress,
+            Remaining: remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero);
     }
 
     private static async Task<QuizTeacherState> BuildTeacherStateAsync(
@@ -475,24 +475,24 @@ public sealed class QuizSessionService(
         var isComplete = false;
 
         return new QuizTeacherState(
-            quiz.Title,
-            currentQuestion is not null,
-            isComplete,
-            currentQuestion is null
+            QuizTitle: quiz.Title,
+            HasSession: currentQuestion is not null,
+            IsComplete: isComplete,
+            CurrentQuestion: currentQuestion is null
                 ? null
                 : new QuizTeacherQuestionState(
-                    currentQuestion.QuestionIndex,
-                    quiz.Questions.Count,
-                    currentQuestion.QuestionKey,
-                    currentQuestion.Title,
-                    currentQuestion.TimeoutSeconds,
-                    currentQuestion.StartedAtUtc,
-                    currentQuestion.FinishedAtUtc,
-                    currentQuestion.AnswerRevealedAtUtc,
-                    currentQuestion.IsInProgress,
-                    currentQuestion.IsAnswerRevealed,
-                    currentQuestion.Remaining),
-            studentStatuses);
+                    QuestionIndex: currentQuestion.QuestionIndex,
+                    QuestionCount: quiz.Questions.Count,
+                    QuestionKey: currentQuestion.QuestionKey,
+                    Title: currentQuestion.Title,
+                    TimeoutSeconds: currentQuestion.TimeoutSeconds,
+                    StartedAtUtc: currentQuestion.StartedAtUtc,
+                    FinishedAtUtc: currentQuestion.FinishedAtUtc,
+                    AnswerRevealedAtUtc: currentQuestion.AnswerRevealedAtUtc,
+                    IsInProgress: currentQuestion.IsInProgress,
+                    IsAnswerRevealed: currentQuestion.IsAnswerRevealed,
+                    Remaining: currentQuestion.Remaining),
+            Students: studentStatuses);
     }
 
     private static async Task<IReadOnlyList<QuizStudentAnswerStatus>> BuildStudentStatusesAsync(
