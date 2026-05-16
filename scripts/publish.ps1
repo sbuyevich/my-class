@@ -5,6 +5,8 @@ param(
     [string]$OS = "win",
     [ValidateSet("x64", "arm64")]
     [string]$Architecture = "x64",
+    [ValidateRange(1, 65535)]
+    [int]$AppPort = 5555,
     [string]$RuntimeIdentifier,
     [string]$Framework = "net10.0",
     [switch]$NoClean,
@@ -179,6 +181,51 @@ function Stop-MyClassWebProcess {
     }
 }
 
+function Test-CurrentProcessIsAdministrator {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = [Security.Principal.WindowsPrincipal]::new($identity)
+
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+function Set-MyClassFirewallRule {
+    param([int]$Port)
+
+    if (-not $IsWindows -and $PSVersionTable.PSEdition -eq "Core") {
+        Write-Host "Skipping Windows firewall rule because this host is not Windows."
+        return
+    }
+
+    if (-not (Get-Command New-NetFirewallRule -ErrorAction SilentlyContinue)) {
+        Write-Host "Skipping Windows firewall rule because NetSecurity cmdlets are not available."
+        return
+    }
+
+    if (-not (Test-CurrentProcessIsAdministrator)) {
+        Write-Warning "Skipping Windows firewall rule for port $Port because this script is not running as administrator."
+        return
+    }
+
+    $displayName = "Allow My Class App port access"
+    $existingRule = Get-NetFirewallRule -DisplayName $displayName -ErrorAction SilentlyContinue | Select-Object -First 1
+
+    if ($existingRule) {
+        Write-Host "Updating Windows firewall rule '$displayName' for TCP port $Port."
+        $existingRule | Set-NetFirewallRule -Direction Inbound -Action Allow -Profile Private -Enabled True
+        $existingRule | Get-NetFirewallPortFilter | Set-NetFirewallPortFilter -Protocol TCP -LocalPort $Port
+        return
+    }
+
+    Write-Host "Creating Windows firewall rule '$displayName' for TCP port $Port."
+    New-NetFirewallRule `
+        -DisplayName $displayName `
+        -Direction Inbound `
+        -Action Allow `
+        -Protocol TCP `
+        -LocalPort $Port `
+        -Profile Private | Out-Null
+}
+
 $scriptRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
 $repoRoot = Split-Path -Parent $scriptRoot
 $srcRoot = Join-Path $repoRoot "src"
@@ -204,6 +251,10 @@ $dotnetPath = Get-DotNetCommand
 Assert-DotNet10SdkInstalled -DotNetPath $dotnetPath
 Assert-SafeAppOutputPath -PackageRoot $packageRoot -AppOutputPath $appOutputPath
 Stop-MyClassWebProcess -PidPath $pidPath
+
+if ($publishTarget.OS -eq "win") {
+    Set-MyClassFirewallRule -Port $AppPort
+}
 
 if (-not $NoClean -and (Test-Path -LiteralPath $appOutputPath)) {
     Write-Host "Cleaning $appOutputPath"
