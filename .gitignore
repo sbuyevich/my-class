@@ -4,6 +4,7 @@ obj/
 out/
 .build/
 dist/
+*.zip
 
 # User-specific files
 *.user

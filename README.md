@@ -123,36 +123,22 @@ The app uses SQLite with this default connection string:
 
 On startup, `DatabaseInitializer` creates missing tables/columns and seeds a demo school/class when the database is empty.
 
-## Publish
+## Create and Release Zip Files 
 
-Publish one target package:
-
-```
-.\scripts\publish.ps1 -OS win -Architecture x64
-.\scripts\publish.ps1 -OS macos -Architecture x64
-```
-
-Useful options:
-
-- `-Configuration Release`
-- `-Architecture x64` or `arm64`
-- `-RuntimeIdentifier win-x64` or `osx-arm64`
-- `-FrameworkDependent`
-- `-NoSingleFile`
-- `-NoClean`
-
-Build both distribution folders and zip files from Windows:
+From a Windows terminal at the repository root, run:
 
 ```bat
 .\scripts\dist.bat
 ```
 
-This creates or updates:
+The script publishes both Windows and macOS packages, then creates:
 
-- `dist-win/`
 - `dist-win.zip`
-- `dist-macos/`
 - `dist-macos.zip`
+
+Upload zip files in [release](https://github.com/sbuyevich/my-class/releases)
+
+Each zip contains a top-level folder named `My Class`.
 
 ## Run Packaged Windows App
 
