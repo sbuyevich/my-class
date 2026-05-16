@@ -107,6 +107,52 @@ src/assets/quizzes/astronomy/
     a.jpg
 ```
 
+Files in each quiz folder:
+
+- `quiz.json`: quiz-level metadata, including the quiz title, default time limit, and question list.
+- `01/`, `02/`, etc.: one folder per question. The folder number should match the question order.
+- `q.json`: question-level metadata, including the question title, key, answer count, correct answer, and optional timeout.
+- `q.jpg`: image shown to students and the teacher while the question is active.
+- `a.jpg`: image shown after the teacher clicks **Show Answer**.
+
+Example `quiz.json`:
+
+```json
+{
+  "name": "Astronomy - easy",
+  "title": "How good do you know Astronomy?",
+  "timeLimitSeconds": 300,
+  "answerCount": 4
+}
+```
+
+`quiz.json` values:
+
+- `name`: required display name shown in the teacher quiz selector.
+- `title`: required title shown on the teacher and student quiz screens.
+- `timeLimitSeconds`: required default question timer in seconds. Must be greater than `0`.
+- `answerCount`: optional default number of answer buttons for each question. Supported values are `1` to `4`; when omitted, the app uses `4`.
+
+Example `q.json`:
+
+```json
+{
+  "question": "Which planet is known as the Red Planet?",
+  "correctAnswer": "2",
+  "timeLimitSeconds": 10,
+  "answerCount": 4
+}
+```
+
+`q.json` values:
+
+- `question`: optional question text shown as the question title. When omitted or empty, the folder name, such as `01`, is used.
+- `correctAnswer`: required correct answer button number as text, for example `"1"`, `"2"`, `"3"`, or `"4"`. It must be within the configured answer count.
+- `timeLimitSeconds`: optional timer override for this question. When omitted, the app uses `quiz.json` `timeLimitSeconds`.
+- `answerCount`: optional answer button count for this question. When omitted, the app uses `quiz.json` `answerCount`, or `4` if no quiz default is set.
+
+JSON property names are case-insensitive, so `timeLimitSeconds` and `TimeLimitSeconds` both work.
+
 The quiz root is configured with `Quiz:RootFolder` in `src/MyClass.Web/appsettings.json`. Currently included quiz sets are:
 
 - `astronomy`
