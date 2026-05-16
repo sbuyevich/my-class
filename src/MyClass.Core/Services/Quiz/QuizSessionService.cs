@@ -38,7 +38,12 @@ public sealed class QuizSessionService(
 
         if (currentQuestion is not null && currentQuestion.IsExpired && !currentQuestion.IsAnswerRevealed)
         {
-            await FinishQuestionRowsAsync(dbContext, currentClass.ClassId, currentQuestion, now, cancellationToken);
+            await FinishQuestionRowsAsync(
+                dbContext,
+                currentClass.ClassId,
+                currentQuestion,
+                now,
+                cancellationToken);
             await quizNotificationService.NotifyQuizStateChangedAsync(currentClass, cancellationToken);
             currentQuestion = await GetCurrentLiveQuestionAsync(dbContext, contentResult.Value, currentClass.ClassId, now, cancellationToken);
         }
@@ -171,7 +176,7 @@ public sealed class QuizSessionService(
         await FinishQuestionRowsAsync(dbContext, currentClass.ClassId, currentQuestion, DateTime.UtcNow, cancellationToken);
         await quizNotificationService.NotifyQuizStateChangedAsync(currentClass, cancellationToken);
 
-        return Result<bool>.Success(true, "Question finished and answer shown.");
+        return Result<bool>.Success(true, "Question finished.");
     }
 
     public async Task<Result<bool>> ShowAnswerAsync(
@@ -217,7 +222,6 @@ public sealed class QuizSessionService(
         LoginState? loginState,
         ClassContext currentClass,
         string? quizFolderPath = null,
-        bool revealCurrentQuestion = true,
         CancellationToken cancellationToken = default)
     {
         var authorizationMessage = ValidateTeacherAccess(loginState, currentClass);
@@ -250,8 +254,7 @@ public sealed class QuizSessionService(
                 currentClass.ClassId,
                 currentQuestion,
                 now,
-                cancellationToken,
-                revealAnswer: revealCurrentQuestion);
+                cancellationToken);
             await quizNotificationService.NotifyQuizStateChangedAsync(currentClass, cancellationToken);
             currentQuestion = await GetCurrentLiveQuestionAsync(dbContext, contentResult.Value, currentClass.ClassId, now, cancellationToken);
         }
@@ -340,8 +343,7 @@ public sealed class QuizSessionService(
         int classId,
         LiveQuestionState question,
         DateTime endedAtUtc,
-        CancellationToken cancellationToken,
-        bool revealAnswer = true)
+        CancellationToken cancellationToken)
     {
         var answers = await dbContext.QuizAnswers
             .Where(answer =>
@@ -354,11 +356,6 @@ public sealed class QuizSessionService(
         foreach (var answer in answers)
         {
             answer.EndedAtUtc ??= endedAtUtc;
-            if (revealAnswer)
-            {
-                answer.AnswerRevealedAtUtc ??= endedAtUtc;
-            }
-
             answer.IsCorrect = answer.Answer.Length > 0 &&
                 string.Equals(answer.Answer, answer.CorrectAnswer, StringComparison.Ordinal);
         }

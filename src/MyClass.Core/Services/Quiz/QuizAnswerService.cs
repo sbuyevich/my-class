@@ -11,7 +11,6 @@ public sealed class QuizAnswerService(
     IDbContextFactory<ApplicationDbContext> dbContextFactory,
     IQuizContentService quizContentService,
     IActiveQuizSelectionService activeQuizSelectionService,
-    IQuizAutoNextStateService quizAutoNextStateService,
     IQuizNotificationService quizNotificationService,
     IOptions<QuizOptions> quizOptions) : IQuizAnswerService
 {
@@ -82,10 +81,13 @@ public sealed class QuizAnswerService(
 
         if (current.IsExpired && !current.IsAnswerRevealed)
         {
-            var revealedAtUtc = await FinishExpiredQuestionAsync(dbContext, current, currentClass.ClassId, cancellationToken);
+            await FinishExpiredQuestionAsync(
+                dbContext,
+                current,
+                currentClass.ClassId,
+                cancellationToken);
             current = current with
             {
-                AnswerRevealedAtUtc = revealedAtUtc,
                 IsInProgress = false,
                 Remaining = TimeSpan.Zero
             };
@@ -231,7 +233,11 @@ public sealed class QuizAnswerService(
 
         if (current.IsExpired)
         {
-            await FinishExpiredQuestionAsync(dbContext, current, currentClass.ClassId, cancellationToken);
+            await FinishExpiredQuestionAsync(
+                dbContext,
+                current,
+                currentClass.ClassId,
+                cancellationToken);
 
             return Result<bool>.Failure("This question has finished.");
         }
@@ -267,13 +273,10 @@ public sealed class QuizAnswerService(
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        var autoNextEnabled = quizAutoNextStateService.IsAutoNextEnabled(currentClass.ClassId);
         if (await CompleteQuestionIfAllStudentsAnsweredAsync(
             dbContext,
             current,
             currentClass.ClassId,
-            submittedAtUtc,
-            revealAnswer: !autoNextEnabled,
             cancellationToken))
         {
             await quizNotificationService.NotifyQuizStateChangedAsync(currentClass, cancellationToken);
@@ -554,8 +557,6 @@ public sealed class QuizAnswerService(
         ApplicationDbContext dbContext,
         CurrentQuestion current,
         int classId,
-        DateTime completedAtUtc,
-        bool revealAnswer,
         CancellationToken cancellationToken)
     {
         var answers = await dbContext.QuizAnswers
@@ -575,19 +576,11 @@ public sealed class QuizAnswerService(
 
         foreach (var answer in answers)
         {
-            if (revealAnswer)
-            {
-                answer.AnswerRevealedAtUtc = completedAtUtc;
-            }
-
             answer.IsCorrect = answer.Answer.Length > 0 &&
                 string.Equals(answer.Answer, answer.CorrectAnswer, StringComparison.Ordinal);
         }
 
-        if (revealAnswer)
-        {
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return true;
     }
@@ -611,7 +604,6 @@ public sealed class QuizAnswerService(
         foreach (var answer in answers)
         {
             answer.EndedAtUtc ??= finishedAtUtc;
-            answer.AnswerRevealedAtUtc ??= finishedAtUtc;
             answer.IsCorrect = answer.Answer.Length > 0 &&
                 string.Equals(answer.Answer, answer.CorrectAnswer, StringComparison.Ordinal);
         }

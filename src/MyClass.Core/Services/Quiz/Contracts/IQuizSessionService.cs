@@ -44,7 +44,6 @@ public interface IQuizSessionService
         LoginState? loginState,
         ClassContext currentClass,
         string? quizFolderPath = null,
-        bool revealCurrentQuestion = true,
         CancellationToken cancellationToken = default);
 }
 

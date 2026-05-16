@@ -250,11 +250,7 @@ public partial class TeacherQuizPanel
     {
         _loadedImageQuestionKey = null;
         _loadedAnswerRevealState = null;
-        await RunActionAsync(() => QuizSessionService.MoveNextQuestionAsync(
-            _loginState,
-            CurrentClass,
-            _selectedQuizPath,
-            revealCurrentQuestion: false));
+        await RunActionAsync(() => QuizSessionService.MoveNextQuestionAsync(_loginState, CurrentClass, _selectedQuizPath));
     }
 
     private async Task ShowAnswerAsync()
