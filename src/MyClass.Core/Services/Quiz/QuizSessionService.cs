@@ -481,7 +481,10 @@ public sealed class QuizSessionService(
             currentQuestion,
             cancellationToken);
 
-        var isComplete = false;
+        var isComplete =
+            currentQuestion is not null &&
+            currentQuestion.QuestionIndex >= quiz.Questions.Count - 1 &&
+            !currentQuestion.IsInProgress;
 
         return new QuizTeacherState(
             QuizTitle: quiz.Title,

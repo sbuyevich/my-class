@@ -162,6 +162,8 @@ public sealed class QuizAnswerService(
 
         if (answer.Answer.Length > 0)
         {
+            var submittedMessage = GetSubmittedAnswerMessage(answer.Answer, current);
+
             // Submitted mode: the student has locked in an answer, but the teacher
             // has not revealed results or advanced to another question yet.
             return Result<QuizAnswerPageState>.Success(value:
@@ -169,7 +171,7 @@ public sealed class QuizAnswerService(
                     hasInProgressAnswer: false,
                     alreadyAnswered: true,
                     failedNoAnswer: false,
-                    message: $"Answer {answer.Answer} was submitted. Waiting for the next question.",
+                    message: submittedMessage,
                     quizTitle: contentResult.Value.Title,
                     currentQuestion: current,
                     answerChoices: answerChoices,
@@ -512,6 +514,11 @@ public sealed class QuizAnswerService(
             {
                 var isCurrent = question.Index == currentQuestion.QuestionIndex;
                 var isPast = question.Index < currentQuestion.QuestionIndex;
+                var isClosedFinalQuestion =
+                    isCurrent &&
+                    question.Index >= currentQuestion.QuestionCount - 1 &&
+                    !currentQuestion.IsInProgress;
+                var isResultVisible = isPast || isClosedFinalQuestion;
                 answers.TryGetValue(question.Index, out var answer);
 
                 var result = GetQuestionProgressResult(
@@ -519,7 +526,7 @@ public sealed class QuizAnswerService(
                     answer?.EndedAtUtc,
                     answer?.AnswerRevealedAtUtc,
                     answer?.IsCorrect,
-                    isPast);
+                    isResultVisible);
 
                 return new QuizQuestionProgressItem(
                     question.Index,
@@ -535,9 +542,9 @@ public sealed class QuizAnswerService(
         DateTime? endedAtUtc,
         DateTime? answerRevealedAtUtc,
         bool? isCorrect,
-        bool isPast)
+        bool isResultVisible)
     {
-        if (answerRevealedAtUtc is null && !isPast)
+        if (answerRevealedAtUtc is null && !isResultVisible)
         {
             if (!string.IsNullOrEmpty(answer))
             {
@@ -577,6 +584,15 @@ public sealed class QuizAnswerService(
             answerNumber >= 1 &&
             answerNumber <= answerCount &&
             string.Equals(answer, answerNumber.ToString(), StringComparison.Ordinal);
+    }
+
+    private static string GetSubmittedAnswerMessage(string answer, CurrentQuestion currentQuestion)
+    {
+        var message = $"Answer {answer} was submitted.";
+
+        return currentQuestion.QuestionIndex >= currentQuestion.QuestionCount - 1
+            ? $"{message} It was last question." 
+            : $"{message} Waiting for the next question.";
     }
 
     private string GetRevealMessage(bool? isCorrect)
