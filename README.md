@@ -81,13 +81,6 @@ dist-macos/                    macOS distribution folder
 design/                        Product, database, stage, and launch notes
 ```
 
-## Requirements
-
-- .NET 10 SDK
-- PowerShell for publish/package scripts
-
-The app targets `net10.0` and uses EF Core SQLite, SignalR, and MudBlazor.
-
 ## Quiz Content
 
 Quiz content is stored under `src/assets/quizzes`. Each quiz folder has a `quiz.json` file and numbered question folders:
