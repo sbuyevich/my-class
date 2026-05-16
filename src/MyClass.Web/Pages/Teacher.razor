@@ -3,12 +3,29 @@
 @inject IUrlService UrlService
 @inject IQrCodeService QrCodeService
 @inject IClassContextService ClassContextService
+@inject ILoginStateService LoginStateService
+@inject ISessionStorageService SessionStorage
+@inject IStudentService StudentService
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <PageTitle>My Class - Teacher</PageTitle>
 
 <RoleGate RequireTeacher="true" DeniedMessage="Only teachers can use the teacher landing page.">
     <MudStack Spacing="3">
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
+                <MudText Typo="Typo.h6" Color="Color.Secondary">Click the Reset button to make sure all students are inactive before they log in or register.</MudText>
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Secondary"
+                           StartIcon="@Icons.Material.Filled.RestartAlt"
+                           Disabled="_isResettingStudents"
+                           OnClick="ResetActiveStudentsAsync">
+                    @(_isResettingStudents ? "Resetting..." : "Reset")
+                </MudButton>
+                <MudText Typo="Typo.h6" Color="Color.Secondary">Then ask students to load the URL below.</MudText>
+            </MudStack>
+        </MudAlert>
 
         @if (_studentEntryUrlResult is null)
         {

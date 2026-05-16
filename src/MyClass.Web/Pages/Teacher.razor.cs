@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using MudBlazor;
 using MyClass.Core.Models;
 
 namespace MyClass.Web.Pages;
@@ -10,6 +11,8 @@ public partial class Teacher
 
     private Result<string>? _studentEntryUrlResult;
     private string? _qrCodeDataUri;
+    private LoginState? _loginState;
+    private bool _isResettingStudents;
 
     protected override void OnParametersSet()
     {
@@ -34,6 +37,24 @@ public partial class Teacher
         {
             _qrCodeDataUri = null;
             _studentEntryUrlResult = Result<string>.Failure("The student connection URL is too long to display as a QR code.");
+        }
+    }
+
+    private async Task ResetActiveStudentsAsync()
+    {
+        try
+        {
+            _isResettingStudents = true;
+            _loginState = LoginStateService.CurrentLoginState ?? await SessionStorage.GetLoginStateAsync();
+            LoginStateService.SetLoginState(_loginState);
+
+            var result = await StudentService.ResetStudentsActiveStateAsync(_loginState, CurrentClass);
+
+            Snackbar.Add(result.Message, result.Succeeded ? Severity.Success : Severity.Error);
+        }
+        finally
+        {
+            _isResettingStudents = false;
         }
     }
 }
