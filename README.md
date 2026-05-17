@@ -1,8 +1,8 @@
-This repo was created to explore `Agentic Engineering`.
+This repository was created to explore `Agentic Engineering`.
 
 `Agentic Engineering` means using AI agents as part of the software engineering process, not just asking AI to write small code snippets.
 
-## App Creation Flow By Docs
+## App Creation Flow From Docs
 
 1. [Idea](design/idea.md)
 2. [Spec](design/spec.md)
@@ -16,13 +16,14 @@ MyClass is a .NET 10 Blazor web app for running classroom quizzes. Teachers can 
 ## Features
 
 - Teacher and student login flows scoped by class code.
-- School, class, and student management backed by SQLite.
+- School, class, and student management backed by SQLite database.
+- Blazor uses InteractiveServer render mode, so it needs a persistent connection.
 - Real-time quiz status updates with SignalR.
-- Quiz content loaded from local JSON and image assets.
+- Quiz content loaded from local JSON and image assets. One image represents the question with possible answers, and another image has the correct answer. See [README](./dist-win/README.md) for details. Because quiz content is image-based, it is possible to create complex quizzes in any language.
 - MudBlazor UI components.
-- Windows and macOS publish targets with packaged `dist-win.zip` and `dist-macos.zip`.
+- Windows and macOS publish targets with packaged `dist-win.zip` and `dist-macos.zip`. Packages contain the .NET 10 SDK, so it does not need to be installed on the teacher's computer.
 
-## Download And Run Release Zip Files
+## Download and Run Release Zip Files
 
 1. Open the [MyClass releases page](https://github.com/sbuyevich/my-class/releases).
 2. Open the latest release.
@@ -38,7 +39,9 @@ MyClass is a .NET 10 Blazor web app for running classroom quizzes. Teachers can 
 demo.bat
 ```
 
-The launcher starts the app with class code `demo`, opens the teacher computer browser, and uses port `5555`. The app home page shows the URL and QR code students can use from devices on the same Wi-Fi/LAN.
+> You may need to run `demo.bat` as an administrator from `cmd`, especially if the teacher's computer has Windows 11.
+
+The launcher starts the app with class code `demo`, opens the browser on the teacher's computer, and uses port `5555`. The app home page shows the URL and QR code students can use from devices on the same Wi-Fi/LAN.
 
 ## Network Requirements
 
@@ -107,7 +110,7 @@ Example `quiz.json`:
 ```json
 {
   "name": "Astronomy - easy",
-  "title": "How good do you know Astronomy?",
+  "title": "How well do you know Astronomy?",
   "timeLimitSeconds": 300,
   "answerCount": 4
 }
@@ -156,7 +159,7 @@ The app uses SQLite with this default connection string:
 
 On startup, `DatabaseInitializer` creates missing tables/columns and seeds a demo school/class when the database is empty.
 
-## Create And Release Zip Files 
+## Create and Release Zip Files
 
 From a Windows terminal at the repository root, run:
 
@@ -169,10 +172,9 @@ The script publishes both Windows and macOS packages, then creates:
 - `dist-win.zip`
 - `dist-macos.zip`
 
-Upload zip files in [release](https://github.com/sbuyevich/my-class/releases)
+Upload zip files to [releases](https://github.com/sbuyevich/my-class/releases).
 
 Each zip contains a top-level folder named `My Class`.
-
 
 ## Development Notes
 
