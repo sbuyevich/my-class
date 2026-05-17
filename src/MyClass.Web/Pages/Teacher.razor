@@ -17,7 +17,10 @@
             <MudPaper Elevation="0" Outlined="true" Class="pa-2">
                 <MudStack Spacing="1">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">Student reset reminder</MudText>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Secondary" Size="Size.Small" />
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Student reset reminder</MudText>
+                        </MudStack>
                         <span @onclick:stopPropagation="true">
                             <MudIconButton Icon="@(_isResetPanelExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
                                            Color="Color.Secondary"
