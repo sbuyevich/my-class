@@ -17,6 +17,7 @@ public partial class TeacherQuizPanel
     private int? _loadedClassId;
     private int? _pendingClassId;
     private string? _selectedQuizPath;
+    private string? _studentSearchText;
     private string? _loadedImageQuestionKey;
     private bool? _loadedAnswerRevealState;
     private string? _imageDataUri;
@@ -26,6 +27,8 @@ public partial class TeacherQuizPanel
     private bool _autoNext;
     private bool _quizSelectionLoaded;
     private bool HasSelectedQuiz => !string.IsNullOrWhiteSpace(_selectedQuizPath);
+    private IReadOnlyList<QuizStudentAnswerStatus> FilteredStudents =>
+        FilterStudents(_stateResult?.Value?.Students ?? []);
 
     protected override void OnParametersSet()
     {
@@ -40,6 +43,7 @@ public partial class TeacherQuizPanel
         _availableQuizzesResult = null;
         _availableQuizzes = [];
         _selectedQuizPath = null;
+        _studentSearchText = null;
         _quizSelectionLoaded = false;
         _loadedImageQuestionKey = null;
         _loadedAnswerRevealState = null;
@@ -383,6 +387,27 @@ public partial class TeacherQuizPanel
         }
 
         ActiveQuizSelectionService.SetSelectedQuizPath(CurrentClass.ClassId, _selectedQuizPath);
+    }
+
+    private void HandleStudentSearchChanged(string value)
+    {
+        _studentSearchText = value;
+    }
+
+    private IReadOnlyList<QuizStudentAnswerStatus> FilterStudents(IReadOnlyList<QuizStudentAnswerStatus> students)
+    {
+        var searchText = _studentSearchText?.Trim();
+
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return students;
+        }
+
+        return students
+            .Where(student =>
+                student.DisplayName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                student.UserName.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            .ToList();
     }
 
     private static string FormatRemaining(TimeSpan remaining)

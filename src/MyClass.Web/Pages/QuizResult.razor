@@ -60,8 +60,20 @@
                     <MudStack Spacing="3">
                         <MudText Typo="Typo.h6">Students</MudText>
 
+                        <MudTextField T="string"
+                                      Value="_studentSearchText"
+                                      ValueChanged="HandleStudentSearchChanged"
+                                      Label="Search students"
+                                      Placeholder="Student name"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Immediate="true"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      Clearable="true" />
+
                         <MudTable T="QuizResultStudentSummary"
-                                  Items="StudentSummaries"
+                                  Items="FilteredStudentSummaries"
                                   Dense="true"
                                   Hover="true"
                                   Elevation="0"

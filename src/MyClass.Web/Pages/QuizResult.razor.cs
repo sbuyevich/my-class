@@ -30,11 +30,15 @@ public partial class QuizResult
 
     private Result<QuizResultPageState>? _stateResult;
     private LoginState? _loginState;
+    private string? _studentSearchText;
     private bool _isLoading = true;
     private bool _isExporting;
 
     private IReadOnlyList<QuizResultStudentSummary> StudentSummaries =>
         _stateResult?.Value?.StudentSummaries ?? [];
+
+    private IReadOnlyList<QuizResultStudentSummary> FilteredStudentSummaries =>
+        FilterStudentSummaries(StudentSummaries);
 
     private IReadOnlyList<QuizResultQuestionSummary> QuestionSummaries =>
         _stateResult?.Value?.QuestionSummaries ?? [];
@@ -95,6 +99,25 @@ public partial class QuizResult
         {
             _isExporting = false;
         }
+    }
+
+    private void HandleStudentSearchChanged(string value)
+    {
+        _studentSearchText = value;
+    }
+
+    private IReadOnlyList<QuizResultStudentSummary> FilterStudentSummaries(IReadOnlyList<QuizResultStudentSummary> students)
+    {
+        var searchText = _studentSearchText?.Trim();
+
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return students;
+        }
+
+        return students
+            .Where(student => student.StudentDisplayName.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            .ToList();
     }
 
     private static string BuildCsv(IEnumerable<QuizResultExportRow> rows)

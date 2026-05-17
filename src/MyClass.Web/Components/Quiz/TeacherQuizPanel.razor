@@ -37,8 +37,7 @@ else if (_stateResult.Value is not null)
 {
     var state = _stateResult.Value;
 
-    <MudGrid Spacing="3" Class="teacher-quiz-grid" AlignItems="AlignItems.Center"
-             Justify="Justify.Center">
+    <MudGrid Spacing="3" Class="teacher-quiz-grid" Justify="Justify.Center">
         <MudItem md="10">
             <MudStack Spacing="3">
                 @if (_availableQuizzesResult is not null && !_availableQuizzesResult.Succeeded)
@@ -170,61 +169,75 @@ else if (_stateResult.Value is not null)
         </MudItem>
 
         <MudItem md="10">
-            <MudTable T="QuizStudentAnswerStatus"
-                      Items="state.Students"
-                      Dense="true"
-                      Hover="true"
-                      Elevation="1"
-                      AllowUnsorted="false">
-                <HeaderContent>
-                    <MudTh>
-                        <MudTableSortLabel SortBy="new Func<QuizStudentAnswerStatus, object>(student => student.DisplayName)">
-                            Student
-                        </MudTableSortLabel>
-                    </MudTh>
-                    <MudTh>
-                        <MudTableSortLabel SortBy="new Func<QuizStudentAnswerStatus, object>(student => GetStatusSortValue(student))">
-                            Status
-                        </MudTableSortLabel>
-                    </MudTh>
-                    @if (state.CurrentQuestion?.IsAnswerRevealed == true)
-                    {
+            <MudStack Spacing="2">
+                <MudTextField T="string"
+                              Value="_studentSearchText"
+                              ValueChanged="HandleStudentSearchChanged"
+                              Label="Search students"
+                              Placeholder="Student name or user name"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Immediate="true"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Clearable="true" />
+
+                <MudTable T="QuizStudentAnswerStatus"
+                          Items="FilteredStudents"
+                          Dense="true"
+                          Hover="true"
+                          Elevation="1"
+                          AllowUnsorted="false">
+                    <HeaderContent>
                         <MudTh>
-                            <MudTableSortLabel SortBy="new Func<QuizStudentAnswerStatus, object>(student => student.AnswerElapsed ?? TimeSpan.MaxValue)">
-                                Answer Time
+                            <MudTableSortLabel SortBy="new Func<QuizStudentAnswerStatus, object>(student => student.DisplayName)">
+                                Student
                             </MudTableSortLabel>
                         </MudTh>
                         <MudTh>
-                            <MudTableSortLabel SortBy="new Func<QuizStudentAnswerStatus, object>(student => GetCorrectSortValue(student))">
-                                Correct
+                            <MudTableSortLabel SortBy="new Func<QuizStudentAnswerStatus, object>(student => GetStatusSortValue(student))">
+                                Status
                             </MudTableSortLabel>
                         </MudTh>
-                    }
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Student">@context.DisplayName</MudTd>
-                    <MudTd DataLabel="Status">
-                        <MudChip T="string"
-                                 Size="Size.Small"
-                                 Color="@GetStatusColor(context)"
-                                 Variant="Variant.Filled">
-                            @GetStatusText(context)
-                        </MudChip>
-                    </MudTd>
-                    @if (state.CurrentQuestion?.IsAnswerRevealed == true)
-                    {
-                        <MudTd DataLabel="Answer Time">@FormatAnswerElapsed(context)</MudTd>
-                        <MudTd DataLabel="Correct">
+                        @if (state.CurrentQuestion?.IsAnswerRevealed == true)
+                        {
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<QuizStudentAnswerStatus, object>(student => student.AnswerElapsed ?? TimeSpan.MaxValue)">
+                                    Answer Time
+                                </MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<QuizStudentAnswerStatus, object>(student => GetCorrectSortValue(student))">
+                                    Correct
+                                </MudTableSortLabel>
+                            </MudTh>
+                        }
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Student">@context.DisplayName</MudTd>
+                        <MudTd DataLabel="Status">
                             <MudChip T="string"
                                      Size="Size.Small"
-                                     Color="@GetCorrectColor(context)"
+                                     Color="@GetStatusColor(context)"
                                      Variant="Variant.Filled">
-                                @GetCorrectText(context)
+                                @GetStatusText(context)
                             </MudChip>
                         </MudTd>
-                    }
-                </RowTemplate>
-            </MudTable>
+                        @if (state.CurrentQuestion?.IsAnswerRevealed == true)
+                        {
+                            <MudTd DataLabel="Answer Time">@FormatAnswerElapsed(context)</MudTd>
+                            <MudTd DataLabel="Correct">
+                                <MudChip T="string"
+                                         Size="Size.Small"
+                                         Color="@GetCorrectColor(context)"
+                                         Variant="Variant.Filled">
+                                    @GetCorrectText(context)
+                                </MudChip>
+                            </MudTd>
+                        }
+                    </RowTemplate>
+                </MudTable>
+            </MudStack>
         </MudItem>
     </MudGrid>
 }
