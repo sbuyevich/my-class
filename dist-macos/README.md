@@ -7,7 +7,7 @@ This folder contains the macOS version of My Class.
 From Terminal, run:
 
 ```bash
-chmod +x demo.sh scripts/run.sh app/MyClass.Web
+chmod +x demo.sh scripts/run.sh
 ./demo.sh
 ```
 

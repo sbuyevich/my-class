@@ -145,6 +145,8 @@ fi
 
 [[ -f "$app_path" ]] || die "Published app not found at $app_path."
 
+xattr -dr com.apple.quarantine "$dist_root" 2>/dev/null || true
+
 if [[ ! -x "$app_path" ]]; then
     chmod +x "$app_path"
 fi
