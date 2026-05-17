@@ -32,8 +32,9 @@ This project is developed in small, reviewable stages. The human owns product in
 - Build after each implemented task group.
 - Test the affected workflow manually when UI behavior changes.
 - Mark completed tasks in the stage `plan.md`.
+- Manually refactor and add comments after task/stage implementation.
 
-> Manually refactor after task/stage implementation.
+> DO NOT **"blind"** coding. Code must be human-readable.
 
 ## Documentation Hygiene
 
