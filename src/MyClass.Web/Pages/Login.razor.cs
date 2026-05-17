@@ -16,15 +16,7 @@ public partial class Login
             return;
         }
 
-        var state = LoginStateService.CurrentLoginState ?? await SessionStorage.GetLoginStateAsync();
-
-        if (state is null)
-        {
-            return;
-        }
-
-        LoginStateService.SetLoginState(state);
-        Navigation.NavigateTo(LandingRoutes.For(state));
+        await SessionStorage.RemoveLoginStateAsync();
     }
 
     private Task HandleSucceededAsync(LoginState state)

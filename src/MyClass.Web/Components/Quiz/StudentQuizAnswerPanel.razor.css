@@ -29,22 +29,22 @@
 }
 
 .quiz-progress-circle-answered {
-    background: #d8ecff;
+    background: #bdc5cd;
     border-color: #7db7ef;
 }
 
 .quiz-progress-circle-correct {
-    background: #dff3df;
+    background: #7ee97e;
     border-color: #9bd29b;
 }
 
 .quiz-progress-circle-incorrect {
-    background: #f8dddd;
+    background: #ef8888;
     border-color: #e7a5a5;
 }
 
 .quiz-progress-circle-missed {
-    background: #fff1b8;
+    background: #ffee08;
     border-color: #e3c95e;
 }
 

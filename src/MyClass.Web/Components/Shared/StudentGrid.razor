@@ -47,9 +47,17 @@ else if (_studentsResult.Succeeded)
                          Dense="true" />
 
             <MudButton Variant="Variant.Outlined"
+                       Color="Color.Default"
+                       StartIcon="@Icons.Material.Filled.Refresh"
+                       Disabled="@(_isRefreshing || _isResetting || _isRemoving)"
+                       OnClick="RefreshStudentsAsync">
+                @(_isRefreshing ? "Refreshing..." : "Refresh")
+            </MudButton>
+
+            <MudButton Variant="Variant.Outlined"
                        Color="Color.Secondary"
                        StartIcon="@Icons.Material.Filled.RestartAlt"
-                       Disabled="@(_isResetting || _isRemoving)"
+                       Disabled="@(_isRefreshing || _isResetting || _isRemoving)"
                        OnClick="ResetActiveStudentsAsync">
                 @(_isResetting ? "Resetting..." : "Reset")
             </MudButton>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using System.Globalization;
 using MyClass.Core.Models;
 
 namespace MyClass.Web.Components;
@@ -17,6 +18,7 @@ public partial class TeacherQuizPanel
     private int? _loadedClassId;
     private int? _pendingClassId;
     private string? _selectedQuizPath;
+    private string? _studentSearchText;
     private string? _loadedImageQuestionKey;
     private bool? _loadedAnswerRevealState;
     private string? _imageDataUri;
@@ -26,6 +28,8 @@ public partial class TeacherQuizPanel
     private bool _autoNext;
     private bool _quizSelectionLoaded;
     private bool HasSelectedQuiz => !string.IsNullOrWhiteSpace(_selectedQuizPath);
+    private IReadOnlyList<QuizStudentAnswerStatus> FilteredStudents =>
+        FilterStudents(_stateResult?.Value?.Students ?? []);
 
     protected override void OnParametersSet()
     {
@@ -40,6 +44,7 @@ public partial class TeacherQuizPanel
         _availableQuizzesResult = null;
         _availableQuizzes = [];
         _selectedQuizPath = null;
+        _studentSearchText = null;
         _quizSelectionLoaded = false;
         _loadedImageQuestionKey = null;
         _loadedAnswerRevealState = null;
@@ -385,6 +390,27 @@ public partial class TeacherQuizPanel
         ActiveQuizSelectionService.SetSelectedQuizPath(CurrentClass.ClassId, _selectedQuizPath);
     }
 
+    private void HandleStudentSearchChanged(string value)
+    {
+        _studentSearchText = value;
+    }
+
+    private IReadOnlyList<QuizStudentAnswerStatus> FilterStudents(IReadOnlyList<QuizStudentAnswerStatus> students)
+    {
+        var searchText = _studentSearchText?.Trim();
+
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return students;
+        }
+
+        return students
+            .Where(student =>
+                student.DisplayName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                student.UserName.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
     private static string FormatRemaining(TimeSpan remaining)
     {
         return $"{(int)remaining.TotalMinutes:00}:{remaining.Seconds:00}";
@@ -424,36 +450,6 @@ public partial class TeacherQuizPanel
             !IsLastQuestion(question);
     }
 
-    private static Color GetStatusColor(QuizStudentAnswerStatus status)
-    {
-        if (status.HasAnswered)
-        {
-            return Color.Success;
-        }
-
-        return status.FailedNoAnswer ? Color.Error : Color.Default;
-    }
-
-    private static string GetStatusText(QuizStudentAnswerStatus status)
-    {
-        if (status.HasAnswered)
-        {
-            return "Answered";
-        }
-
-        return "Not answered";
-    }
-
-    private static int GetStatusSortValue(QuizStudentAnswerStatus status)
-    {
-        if (status.HasAnswered)
-        {
-            return 0;
-        }
-
-        return status.FailedNoAnswer ? 2 : 1;
-    }
-
     private static string FormatAnswerElapsed(QuizStudentAnswerStatus status)
     {
         return status.AnswerElapsed is null
@@ -461,33 +457,56 @@ public partial class TeacherQuizPanel
             : $"{(int)status.AnswerElapsed.Value.TotalSeconds}s";
     }
 
-    private static string GetCorrectText(QuizStudentAnswerStatus status)
+    private static string FormatPercent(double percent)
     {
-        return status.IsCorrect switch
-        {
-            true => "Correct",
-            false => "Incorrect",
-            _ => "-"
-        };
+        return percent.ToString("0.#", CultureInfo.CurrentCulture) + "%";
     }
 
-    private static int GetCorrectSortValue(QuizStudentAnswerStatus status)
+    private static string FormatTotalAnswerTime(TimeSpan time)
     {
-        return status.IsCorrect switch
-        {
-            true => 0,
-            false => 1,
-            _ => 2
-        };
+        return time.TotalHours >= 1
+            ? time.ToString(@"h\:mm\:ss", CultureInfo.CurrentCulture)
+            : time.ToString(@"m\:ss", CultureInfo.CurrentCulture);
     }
 
-    private static Color GetCorrectColor(QuizStudentAnswerStatus status)
+    private static QuizQuestionProgressResult GetAnswerResult(QuizStudentAnswerStatus status, bool isAnswerRevealed)
     {
-        return status.IsCorrect switch
+        if (status.HasAnswered)
         {
-            true => Color.Success,
-            false => Color.Error,
+            return status.IsCorrect == true
+                ? QuizQuestionProgressResult.Correct
+                : QuizQuestionProgressResult.Incorrect;
+        }
+
+        return isAnswerRevealed || status.FailedNoAnswer
+            ? QuizQuestionProgressResult.Missed
+            : QuizQuestionProgressResult.NotAnswered;
+    }
+
+    private static string GetAnswerResultText(QuizStudentAnswerStatus status, bool isAnswerRevealed)
+    {
+        return GetAnswerResult(status, isAnswerRevealed).ToString();
+    }
+
+    private static Color GetAnswerResultColor(QuizStudentAnswerStatus status, bool isAnswerRevealed)
+    {
+        return GetAnswerResult(status, isAnswerRevealed) switch
+        {
+            QuizQuestionProgressResult.Correct => Color.Success,
+            QuizQuestionProgressResult.Incorrect => Color.Error,
+            QuizQuestionProgressResult.Missed => Color.Warning,
             _ => Color.Default
+        };
+    }
+
+    private static int GetAnswerResultSortValue(QuizStudentAnswerStatus status, bool isAnswerRevealed)
+    {
+        return GetAnswerResult(status, isAnswerRevealed) switch
+        {
+            QuizQuestionProgressResult.Correct => 0,
+            QuizQuestionProgressResult.Incorrect => 1,
+            QuizQuestionProgressResult.Missed => 2,
+            _ => 4
         };
     }
 

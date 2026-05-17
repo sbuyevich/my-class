@@ -12,6 +12,8 @@ public partial class Students
 
     private int StudentCount => _studentsResult?.Value?.Count ?? 0;
 
+    private int ActiveStudentCount => _studentsResult?.Value?.Count(student => student.IsActive) ?? 0;
+
     private void OnStudentsLoaded(Result<IReadOnlyList<StudentListItem>> result)
     {
         _studentsResult = result;

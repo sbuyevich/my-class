@@ -478,10 +478,14 @@ public sealed class QuizSessionService(
         var studentStatuses = await BuildStudentStatusesAsync(
             dbContext,
             classId,
+            quiz,
             currentQuestion,
             cancellationToken);
 
-        var isComplete = false;
+        var isComplete =
+            currentQuestion is not null &&
+            currentQuestion.QuestionIndex >= quiz.Questions.Count - 1 &&
+            !currentQuestion.IsInProgress;
 
         return new QuizTeacherState(
             QuizTitle: quiz.Title,
@@ -507,6 +511,7 @@ public sealed class QuizSessionService(
     private static async Task<IReadOnlyList<QuizStudentAnswerStatus>> BuildStudentStatusesAsync(
         ApplicationDbContext dbContext,
         int classId,
+        QuizContent quiz,
         LiveQuestionState? currentQuestion,
         CancellationToken cancellationToken)
     {
@@ -524,16 +529,72 @@ public sealed class QuizSessionService(
             })
             .ToListAsync(cancellationToken);
 
+        var studentIds = activeStudents
+            .Select(student => student.Id)
+            .ToList();
+        var questionTimeLimits = quiz.Questions.ToDictionary(
+            question => CreateQuestionTimeKey(question.Index, question.Key),
+            question => TimeSpan.FromSeconds(question.TimeoutSeconds));
+        var defaultQuestionTime = TimeSpan.FromSeconds(quiz.TimeLimitSeconds);
+
+        var summaryRows = await dbContext.QuizAnswers
+            .AsNoTracking()
+            .Where(answer => studentIds.Contains(answer.StudentId))
+            .Select(answer => new
+            {
+                answer.StudentId,
+                answer.QuestionIndex,
+                answer.QuestionKey,
+                answer.Answer,
+                answer.StartedAtUtc,
+                answer.EndedAtUtc,
+                answer.IsCorrect
+            })
+            .ToListAsync(cancellationToken);
+
+        var summaries = summaryRows
+            .GroupBy(answer => answer.StudentId)
+            .ToDictionary(
+                group => group.Key,
+                group =>
+                {
+                    var correctCount = group.Count(answer => answer.IsCorrect);
+                    var totalCount = group.Count();
+                    var totalAnswerTime = TimeSpan.FromTicks(group.Sum(answer =>
+                        GetAnswerTime(answer.QuestionIndex, answer.QuestionKey, answer.Answer, answer.StartedAtUtc, answer.EndedAtUtc, questionTimeLimits, defaultQuestionTime).Ticks));
+
+                    return new StudentAnswerSummary(
+                        correctCount,
+                        totalCount - correctCount,
+                        CalculatePercentCorrect(correctCount, totalCount),
+                        totalAnswerTime);
+                });
+
         if (currentQuestion is null)
         {
             return activeStudents
-                .Select(student => new QuizStudentAnswerStatus(student.Id, student.UserName, student.DisplayName, false, false, null, null, null))
+                .Select(student =>
+                {
+                    summaries.TryGetValue(student.Id, out var summary);
+
+                    return CreateStudentAnswerStatus(
+                        student.Id,
+                        student.UserName,
+                        student.DisplayName,
+                        hasAnswered: false,
+                        failedNoAnswer: false,
+                        answeredAtUtc: null,
+                        answerElapsed: null,
+                        isCorrect: null,
+                        summary);
+                })
                 .ToList();
         }
 
         var answers = await dbContext.QuizAnswers
             .AsNoTracking()
             .Where(answer =>
+                studentIds.Contains(answer.StudentId) &&
                 answer.QuestionIndex == currentQuestion.QuestionIndex &&
                 answer.QuestionKey == currentQuestion.QuestionKey)
             .Select(answer => new
@@ -550,8 +611,9 @@ public sealed class QuizSessionService(
             .Select(student =>
             {
                 answers.TryGetValue(student.Id, out var answer);
+                summaries.TryGetValue(student.Id, out var summary);
 
-                return new QuizStudentAnswerStatus(
+                return CreateStudentAnswerStatus(
                     student.Id,
                     student.UserName,
                     student.DisplayName,
@@ -561,9 +623,69 @@ public sealed class QuizSessionService(
                     answer?.Answer.Length > 0 && answer.EndedAtUtc is not null
                         ? answer.EndedAtUtc.Value - answer.StartedAtUtc
                         : null,
-                    answer?.Answer.Length > 0 ? answer.IsCorrect : null);
+                    answer?.Answer.Length > 0 ? answer.IsCorrect : null,
+                    summary);
             })
             .ToList();
+    }
+
+    private static QuizStudentAnswerStatus CreateStudentAnswerStatus(
+        int studentId,
+        string userName,
+        string displayName,
+        bool hasAnswered,
+        bool failedNoAnswer,
+        DateTime? answeredAtUtc,
+        TimeSpan? answerElapsed,
+        bool? isCorrect,
+        StudentAnswerSummary? summary)
+    {
+        return new QuizStudentAnswerStatus(
+            studentId,
+            userName,
+            displayName,
+            hasAnswered,
+            failedNoAnswer,
+            answeredAtUtc,
+            answerElapsed,
+            isCorrect,
+            summary?.CorrectCount ?? 0,
+            summary?.IncorrectCount ?? 0,
+            summary?.PercentCorrect ?? 0,
+            summary?.TotalAnswerTime ?? TimeSpan.Zero);
+    }
+
+    private static TimeSpan GetAnswerTime(
+        int questionIndex,
+        string questionKey,
+        string answer,
+        DateTime startedAtUtc,
+        DateTime? endedAtUtc,
+        IReadOnlyDictionary<string, TimeSpan> questionTimeLimits,
+        TimeSpan defaultQuestionTime)
+    {
+        if (string.IsNullOrWhiteSpace(answer))
+        {
+            return questionTimeLimits.TryGetValue(CreateQuestionTimeKey(questionIndex, questionKey), out var timeout)
+                ? timeout
+                : defaultQuestionTime;
+        }
+
+        return endedAtUtc is null
+            ? TimeSpan.Zero
+            : endedAtUtc.Value - startedAtUtc;
+    }
+
+    private static double CalculatePercentCorrect(int correctCount, int totalCount)
+    {
+        return totalCount == 0
+            ? 0
+            : (double)correctCount / totalCount * 100;
+    }
+
+    private static string CreateQuestionTimeKey(int questionIndex, string questionKey)
+    {
+        return $"{questionIndex}:{questionKey}";
     }
 
     private string? ValidateTeacherAccess(LoginState? loginState, ClassContext currentClass)
@@ -605,6 +727,12 @@ public sealed class QuizSessionService(
     {
         public bool IsAnswerRevealed => AnswerRevealedAtUtc is not null;
     }
+
+    private sealed record StudentAnswerSummary(
+        int CorrectCount,
+        int IncorrectCount,
+        double PercentCorrect,
+        TimeSpan TotalAnswerTime);
 }
 
 

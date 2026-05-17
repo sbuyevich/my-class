@@ -21,6 +21,7 @@ public partial class StudentGrid
     private bool _isLoading = true;
     private bool _isRemoving;
     private bool _isResetting;
+    private bool _isRefreshing;
 
     private string EmptyStateText
     {
@@ -96,6 +97,21 @@ public partial class StudentGrid
         _isLoading = true;
 
         await LoadStudentsAsync(CurrentClass);
+    }
+
+    private async Task RefreshStudentsAsync()
+    {
+        try
+        {
+            _isRefreshing = true;
+            _isLoading = true;
+
+            await LoadStudentsAsync(CurrentClass);
+        }
+        finally
+        {
+            _isRefreshing = false;
+        }
     }
 
     private async Task ConfirmRemoveStudentAsync(StudentListItem student)

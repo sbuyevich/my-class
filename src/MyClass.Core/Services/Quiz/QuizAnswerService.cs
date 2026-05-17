@@ -7,6 +7,9 @@ using MyClass.Core.Options;
 
 namespace MyClass.Core.Services;
 
+// service for managing student quiz answers,
+// including retrieving the current state of the quiz answer page and submitting answers.
+// This service interacts with the database to validate student access, load quiz content, track progress, and handle answer submissions.
 public sealed class QuizAnswerService(
     IDbContextFactory<ApplicationDbContext> dbContextFactory,
     IQuizContentService quizContentService,
@@ -21,6 +24,7 @@ public sealed class QuizAnswerService(
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
+        // only students can answer quizzes, so validate the login state and class context
         var studentResult = await ValidateStudentAccessAsync(dbContext, loginState, currentClass, cancellationToken);
 
         if (!studentResult.Succeeded || studentResult.Value is null)
@@ -34,6 +38,8 @@ public sealed class QuizAnswerService(
 
         if (!contentResult.Succeeded || contentResult.Value is null)
         {
+            // No-content mode: the student is valid, but the selected quiz cannot
+            // be loaded. Keep the page renderable so the UI can show the message.
             return Result<QuizAnswerPageState>.Success(value: CreateState(
                 hasInProgressAnswer: false,
                 alreadyAnswered: false,
@@ -51,6 +57,8 @@ public sealed class QuizAnswerService(
 
         if (current is null)
         {
+            // Waiting mode: no teacher-started answer rows exist yet, so the page
+            // shows the quiz title and an inactive progress strip.
             return Result<QuizAnswerPageState>.Success(value: CreateState(
                 hasInProgressAnswer: false,
                 alreadyAnswered: false,
@@ -81,6 +89,8 @@ public sealed class QuizAnswerService(
 
         if (current.IsExpired && !current.IsAnswerRevealed)
         {
+            // The teacher may not have an open page when the timer expires, so the
+            // student view also closes stale answer rows before rendering state.
             await FinishExpiredQuestionAsync(
                 dbContext,
                 current,
@@ -115,6 +125,8 @@ public sealed class QuizAnswerService(
             var hasAnswered = answer is not null && answer.Answer.Length > 0;
             var isCorrect = hasAnswered ? answer!.IsCorrect : null as bool?;
 
+            // Reveal mode: answer buttons are disabled and the student sees either
+            // their correctness result or the no-answer message for this question.
             return Result<QuizAnswerPageState>.Success(value:
                 CreateState(
                     hasInProgressAnswer: false,
@@ -135,6 +147,8 @@ public sealed class QuizAnswerService(
 
         if (answer is null)
         {
+            // Waiting mode after a current question lookup usually means the page
+            // refreshed between teacher actions before this student's row existed.
             return Result<QuizAnswerPageState>.Success(value:
                 CreateState(
                     hasInProgressAnswer: false,
@@ -148,12 +162,16 @@ public sealed class QuizAnswerService(
 
         if (answer.Answer.Length > 0)
         {
+            var submittedMessage = GetSubmittedAnswerMessage(answer.Answer, current);
+
+            // Submitted mode: the student has locked in an answer, but the teacher
+            // has not revealed results or advanced to another question yet.
             return Result<QuizAnswerPageState>.Success(value:
                 CreateState(
                     hasInProgressAnswer: false,
                     alreadyAnswered: true,
                     failedNoAnswer: false,
-                    message: $"Answer {answer.Answer} was submitted. Waiting for the next question.",
+                    message: submittedMessage,
                     quizTitle: contentResult.Value.Title,
                     currentQuestion: current,
                     answerChoices: answerChoices,
@@ -163,6 +181,8 @@ public sealed class QuizAnswerService(
 
         if (answer.EndedAtUtc is not null)
         {
+            // Missed mode: the row was closed with no answer, either by timeout or
+            // by all-student completion, and reveal has not happened yet.
             return Result<QuizAnswerPageState>.Success(value:
                 CreateState(
                     hasInProgressAnswer: false,
@@ -175,6 +195,8 @@ public sealed class QuizAnswerService(
                     activeQuizPath: activeQuizPath));
         }
 
+        // Answering mode: the question is open, this student's row is still open,
+        // and the UI should render active answer choices with the countdown.
         return Result<QuizAnswerPageState>.Success(value:
             CreateState(
                 hasInProgressAnswer: true,
@@ -231,6 +253,8 @@ public sealed class QuizAnswerService(
             return Result<bool>.Failure($"Answer must be between 1 and {current.AnswerCount}.");
         }
 
+        // A submit request may arrive after the page rendered but before the user
+        // clicked; close the question first so every student row shares final state.
         if (current.IsExpired)
         {
             await FinishExpiredQuestionAsync(
@@ -267,6 +291,8 @@ public sealed class QuizAnswerService(
 
         var submittedAtUtc = DateTime.UtcNow;
 
+        // Submitting closes only this student's row. The answer remains private
+        // until the teacher reveals results for the whole question.
         answer.Answer = selectedAnswerText;
         answer.EndedAtUtc = submittedAtUtc;
         answer.IsCorrect = string.Equals(selectedAnswerText, answer.CorrectAnswer, StringComparison.Ordinal);
@@ -327,6 +353,8 @@ public sealed class QuizAnswerService(
         DateTime now,
         CancellationToken cancellationToken)
     {
+        // look up the latest question for this class by finding the most recent QuizAnswer row,
+        // which is created when the teacher starts a question
         var latestQuestion = await dbContext.QuizAnswers
             .AsNoTracking()
             .Where(answer =>
@@ -342,6 +370,9 @@ public sealed class QuizAnswerService(
             })
             .FirstOrDefaultAsync(cancellationToken);
 
+        // QuizAnswers are created per student when the teacher starts a question.
+        // The newest answer batch is therefore the source of truth for the active
+        // class question, even before any student submits an answer.
         if (latestQuestion is null)
         {
             return null;
@@ -375,6 +406,9 @@ public sealed class QuizAnswerService(
         var timeoutSeconds = questionContent?.TimeoutSeconds ?? quiz.TimeLimitSeconds;
         var hasOpenAnswers = rows.Any(row => row.EndedAtUtc is null);
         var isExpired = now >= startedAtUtc.AddSeconds(timeoutSeconds);
+
+        // A reveal timestamp on any student row means the question result is public
+        // for the whole class; teacher actions update the rows as a group.
         var answerRevealedAtUtc = rows
             .Where(row => row.AnswerRevealedAtUtc is not null)
             .Select(row => row.AnswerRevealedAtUtc)
@@ -440,7 +474,7 @@ public sealed class QuizAnswerService(
                 question.Index,
                 false,
                 false,
-                QuizQuestionProgressResult.Neutral))
+                QuizQuestionProgressResult.NotAnswered))
             .ToList();
     }
 
@@ -473,11 +507,18 @@ public sealed class QuizAnswerService(
                     .OrderByDescending(answer => answer.StartedAtUtc)
                     .First());
 
+        // Keep the progress strip aligned to the quiz definition, but decorate each
+        // question with the student's latest saved answer row when one exists.
         return quiz.Questions
             .Select(question =>
             {
                 var isCurrent = question.Index == currentQuestion.QuestionIndex;
                 var isPast = question.Index < currentQuestion.QuestionIndex;
+                var isClosedFinalQuestion =
+                    isCurrent &&
+                    question.Index >= currentQuestion.QuestionCount - 1 &&
+                    !currentQuestion.IsInProgress;
+                var isResultVisible = isPast || isClosedFinalQuestion;
                 answers.TryGetValue(question.Index, out var answer);
 
                 var result = GetQuestionProgressResult(
@@ -485,7 +526,7 @@ public sealed class QuizAnswerService(
                     answer?.EndedAtUtc,
                     answer?.AnswerRevealedAtUtc,
                     answer?.IsCorrect,
-                    isPast);
+                    isResultVisible);
 
                 return new QuizQuestionProgressItem(
                     question.Index,
@@ -501,9 +542,9 @@ public sealed class QuizAnswerService(
         DateTime? endedAtUtc,
         DateTime? answerRevealedAtUtc,
         bool? isCorrect,
-        bool isPast)
+        bool isResultVisible)
     {
-        if (answerRevealedAtUtc is null && !isPast)
+        if (answerRevealedAtUtc is null && !isResultVisible)
         {
             if (!string.IsNullOrEmpty(answer))
             {
@@ -512,12 +553,12 @@ public sealed class QuizAnswerService(
 
             return endedAtUtc is not null
                 ? QuizQuestionProgressResult.Missed
-                : QuizQuestionProgressResult.Neutral;
+                : QuizQuestionProgressResult.NotAnswered;
         }
 
         if (endedAtUtc is null)
         {
-            return QuizQuestionProgressResult.Neutral;
+            return QuizQuestionProgressResult.NotAnswered;
         }
 
         if (string.IsNullOrEmpty(answer))
@@ -543,6 +584,15 @@ public sealed class QuizAnswerService(
             answerNumber >= 1 &&
             answerNumber <= answerCount &&
             string.Equals(answer, answerNumber.ToString(), StringComparison.Ordinal);
+    }
+
+    private static string GetSubmittedAnswerMessage(string answer, CurrentQuestion currentQuestion)
+    {
+        var message = $"Answer {answer} was submitted.";
+
+        return currentQuestion.QuestionIndex >= currentQuestion.QuestionCount - 1
+            ? $"{message} It was last question." 
+            : $"{message} Waiting for the next question.";
     }
 
     private string GetRevealMessage(bool? isCorrect)
@@ -585,6 +635,8 @@ public sealed class QuizAnswerService(
             return false;
         }
 
+        // When every row is closed, lock in correctness so the reveal state can be
+        // shown immediately without recalculating answer outcomes per request.
         foreach (var answer in answers)
         {
             answer.IsCorrect = answer.Answer.Length > 0 &&
@@ -612,6 +664,8 @@ public sealed class QuizAnswerService(
                 answer.QuestionKey == current.QuestionKey)
             .ToListAsync(cancellationToken);
 
+        // Expiration is represented by closing any still-open rows with the same
+        // timestamp, including rows for students who never chose an answer.
         foreach (var answer in answers)
         {
             answer.EndedAtUtc ??= finishedAtUtc;
