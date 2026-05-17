@@ -64,7 +64,7 @@ public sealed record QuizQuestionProgressItem(
 public enum QuizQuestionProgressResult
 {
     // Not reached yet, not revealed yet, or no answer row exists for this student.
-    Neutral,
+    NotAnswered,
 
     // The student submitted an answer, but the teacher has not revealed correctness.
     Answered,

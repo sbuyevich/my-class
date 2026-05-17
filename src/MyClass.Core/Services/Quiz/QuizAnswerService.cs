@@ -474,7 +474,7 @@ public sealed class QuizAnswerService(
                 question.Index,
                 false,
                 false,
-                QuizQuestionProgressResult.Neutral))
+                QuizQuestionProgressResult.NotAnswered))
             .ToList();
     }
 
@@ -553,12 +553,12 @@ public sealed class QuizAnswerService(
 
             return endedAtUtc is not null
                 ? QuizQuestionProgressResult.Missed
-                : QuizQuestionProgressResult.Neutral;
+                : QuizQuestionProgressResult.NotAnswered;
         }
 
         if (endedAtUtc is null)
         {
-            return QuizQuestionProgressResult.Neutral;
+            return QuizQuestionProgressResult.NotAnswered;
         }
 
         if (string.IsNullOrEmpty(answer))

@@ -8,6 +8,10 @@ public sealed record QuizStudentAnswerStatus(
     bool FailedNoAnswer,
     DateTime? AnsweredAtUtc,
     TimeSpan? AnswerElapsed,
-    bool? IsCorrect);
+    bool? IsCorrect,
+    int CorrectCount,
+    int IncorrectCount,
+    double PercentCorrect,
+    TimeSpan TotalAnswerTime);
 
 

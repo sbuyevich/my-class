@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using System.Globalization;
 using MyClass.Core.Models;
 
 namespace MyClass.Web.Components;
@@ -449,36 +450,6 @@ public partial class TeacherQuizPanel
             !IsLastQuestion(question);
     }
 
-    private static Color GetStatusColor(QuizStudentAnswerStatus status)
-    {
-        if (status.HasAnswered)
-        {
-            return Color.Success;
-        }
-
-        return status.FailedNoAnswer ? Color.Error : Color.Default;
-    }
-
-    private static string GetStatusText(QuizStudentAnswerStatus status)
-    {
-        if (status.HasAnswered)
-        {
-            return "Answered";
-        }
-
-        return "Not answered";
-    }
-
-    private static int GetStatusSortValue(QuizStudentAnswerStatus status)
-    {
-        if (status.HasAnswered)
-        {
-            return 0;
-        }
-
-        return status.FailedNoAnswer ? 2 : 1;
-    }
-
     private static string FormatAnswerElapsed(QuizStudentAnswerStatus status)
     {
         return status.AnswerElapsed is null
@@ -486,33 +457,56 @@ public partial class TeacherQuizPanel
             : $"{(int)status.AnswerElapsed.Value.TotalSeconds}s";
     }
 
-    private static string GetCorrectText(QuizStudentAnswerStatus status)
+    private static string FormatPercent(double percent)
     {
-        return status.IsCorrect switch
-        {
-            true => "Correct",
-            false => "Incorrect",
-            _ => "-"
-        };
+        return percent.ToString("0.#", CultureInfo.CurrentCulture) + "%";
     }
 
-    private static int GetCorrectSortValue(QuizStudentAnswerStatus status)
+    private static string FormatTotalAnswerTime(TimeSpan time)
     {
-        return status.IsCorrect switch
-        {
-            true => 0,
-            false => 1,
-            _ => 2
-        };
+        return time.TotalHours >= 1
+            ? time.ToString(@"h\:mm\:ss", CultureInfo.CurrentCulture)
+            : time.ToString(@"m\:ss", CultureInfo.CurrentCulture);
     }
 
-    private static Color GetCorrectColor(QuizStudentAnswerStatus status)
+    private static QuizQuestionProgressResult GetAnswerResult(QuizStudentAnswerStatus status, bool isAnswerRevealed)
     {
-        return status.IsCorrect switch
+        if (status.HasAnswered)
         {
-            true => Color.Success,
-            false => Color.Error,
+            return status.IsCorrect == true
+                ? QuizQuestionProgressResult.Correct
+                : QuizQuestionProgressResult.Incorrect;
+        }
+
+        return isAnswerRevealed || status.FailedNoAnswer
+            ? QuizQuestionProgressResult.Missed
+            : QuizQuestionProgressResult.NotAnswered;
+    }
+
+    private static string GetAnswerResultText(QuizStudentAnswerStatus status, bool isAnswerRevealed)
+    {
+        return GetAnswerResult(status, isAnswerRevealed).ToString();
+    }
+
+    private static Color GetAnswerResultColor(QuizStudentAnswerStatus status, bool isAnswerRevealed)
+    {
+        return GetAnswerResult(status, isAnswerRevealed) switch
+        {
+            QuizQuestionProgressResult.Correct => Color.Success,
+            QuizQuestionProgressResult.Incorrect => Color.Error,
+            QuizQuestionProgressResult.Missed => Color.Warning,
             _ => Color.Default
+        };
+    }
+
+    private static int GetAnswerResultSortValue(QuizStudentAnswerStatus status, bool isAnswerRevealed)
+    {
+        return GetAnswerResult(status, isAnswerRevealed) switch
+        {
+            QuizQuestionProgressResult.Correct => 0,
+            QuizQuestionProgressResult.Incorrect => 1,
+            QuizQuestionProgressResult.Missed => 2,
+            _ => 4
         };
     }
 
