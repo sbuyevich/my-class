@@ -12,6 +12,7 @@ public partial class Teacher
     private Result<string>? _studentEntryUrlResult;
     private string? _qrCodeDataUri;
     private LoginState? _loginState;
+    private bool _isResetPanelExpanded = true;
     private bool _isResettingStudents;
 
     protected override void OnParametersSet()
@@ -56,5 +57,10 @@ public partial class Teacher
         {
             _isResettingStudents = false;
         }
+    }
+
+    private void ToggleResetPanel()
+    {
+        _isResetPanelExpanded = !_isResetPanelExpanded;
     }
 }
