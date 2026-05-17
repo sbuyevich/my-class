@@ -13,35 +13,54 @@
 
 <RoleGate RequireTeacher="true" DeniedMessage="Only teachers can use the teacher landing page.">
     <MudStack Spacing="3">
-        <MudPaper Elevation="0" Outlined="true" Class="pa-2">
-            <MudStack Spacing="1">
-                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">Student reset reminder</MudText>
-                    <MudIconButton Icon="@(_isResetPanelExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
-                                   Color="Color.Secondary"
-                                   Size="Size.Small"
-                                   aria-label="@(_isResetPanelExpanded ? "Collapse reset reminder" : "Expand reset reminder")"
-                                   OnClick="ToggleResetPanel" />
-                </MudStack>
-
-                <MudCollapse Expanded="_isResetPanelExpanded">
+        <div @onclick="ToggleResetPanel" style="cursor: pointer;">
+            <MudPaper Elevation="0" Outlined="true" Class="pa-2">
+                <MudStack Spacing="1">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            Click Reset to make students inactive before they log in or register. Then ask students to load the URL below. You can see active students in Students page.
-                        </MudText>
-
-                        <MudButton Variant="Variant.Outlined"
-                                   Color="Color.Secondary"
-                                   Size="Size.Small"
-                                   StartIcon="@Icons.Material.Filled.RestartAlt"
-                                   Disabled="_isResettingStudents"
-                                   OnClick="ResetActiveStudentsAsync">
-                            @(_isResettingStudents ? "Resetting..." : "Reset")
-                        </MudButton>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Student reset reminder</MudText>
+                        <span @onclick:stopPropagation="true">
+                            <MudIconButton Icon="@(_isResetPanelExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
+                                           Color="Color.Secondary"
+                                           Size="Size.Small"
+                                           aria-label="@(_isResetPanelExpanded ? "Collapse reset reminder" : "Expand reset reminder")"
+                                           OnClick="ToggleResetPanel" />
+                        </span>
                     </MudStack>
-                </MudCollapse>
-            </MudStack>
-        </MudPaper>
+
+                    <MudCollapse Expanded="_isResetPanelExpanded">
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12" md="2">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
+                                    <span @onclick:stopPropagation="true">
+                                        <MudButton Variant="Variant.Outlined"
+                                                   Color="Color.Secondary"
+                                                   Size="Size.Small"
+                                                   StartIcon="@Icons.Material.Filled.RestartAlt"
+                                                   Disabled="_isResettingStudents"
+                                                   OnClick="ResetActiveStudentsAsync">
+                                            @(_isResettingStudents ? "Resetting..." : "Reset")
+                                        </MudButton>
+                                    </span>
+                                </MudStack>
+                            </MudItem>
+                            <MudItem xs="12" md="10">
+                                <MudStack Spacing="1">
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        Click Reset to make students inactive before they log in or register.
+                                    </MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        Then ask students to load the URL below.
+                                    </MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        You can see active students in Students page.
+                                    </MudText>
+                                </MudStack>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCollapse>
+                </MudStack>
+            </MudPaper>
+        </div>
 
         @if (_studentEntryUrlResult is null)
         {
