@@ -12,6 +12,8 @@ demo.bat
 
 This starts the app with class code `demo`, opens the teacher computer browser, and uses port `5555`.
 
+> You may need to run `demo.bat` as an administrator from `cmd`, especially if the teacher's computer has Windows 11.
+
 Replace `demo` with your class code if needed.
 
 Teacher login:
