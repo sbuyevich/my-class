@@ -11,5 +11,7 @@ if "%PORT%"=="" (
     set "PORT=5555"
 )
 
+@echo Running My Class app with Class Code: %CLASS_CODE% and Port: %PORT%
+
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0run.ps1" -ClassCode "%CLASS_CODE%" -Port "%PORT%"
 exit /b %ERRORLEVEL%
