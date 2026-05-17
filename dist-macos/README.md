@@ -1,18 +1,17 @@
 # My Class Teacher Guide
 
-This folder contains the MacOS version of My Class.
+This folder contains the macOS version of My Class.
 
 ## Run The App
 
-Double-click:
+From Terminal, run:
 
-```bat
-demo.bat
+```bash
+chmod +x demo.sh scripts/run.sh app/MyClass.Web
+./demo.sh
 ```
 
 This starts the app with class code `demo`, opens the teacher computer browser, and uses port `5555`.
-
-> You may need to run `demo.bat` as an administrator from `cmd`, especially if the teacher's computer has Windows 11.
 
 Replace `demo` with your class code if needed.
 
@@ -52,24 +51,24 @@ Example:
 http://192.168.1.165:5555/?c=S-A-2025
 ```
 
-You can also copy `demo.bat`, rename it to something like `S-A-2025.bat`, and change this line:
+You can also copy `demo.sh`, rename it to something like `S-A-2025.sh`, and change this line:
 
-```bat
-call run.bat demo %*
+```bash
+exec "$script_dir/scripts/run.sh" demo "$@"
 ```
 
 to:
 
-```bat
-call run.bat S-A-2025 %*
+```bash
+exec "$script_dir/scripts/run.sh" S-A-2025 "$@"
 ```
 
-Then double-click `S-A-2025.bat` to start that class.
+Then run `./S-A-2025.sh` to start that class.
 
 To run a class on a different port, pass the port as the second value:
 
-```bat
-.\scripts\run.bat S-A-2025 3333
+```bash
+./scripts/run.sh S-A-2025 3333
 ```
 
 Students can register or sign in using the same class code.
@@ -155,5 +154,5 @@ Restart the app after adding or changing quiz files. The new quiz should appear 
 If students cannot open the link, check:
 
 - They are on the same Wi-Fi/LAN as the teacher computer.
-- Windows Firewall allows the app or port `5555`.
+- macOS Firewall allows incoming connections for the app or port `5555`.
 - The school or guest Wi-Fi is not blocking device-to-device connections.
