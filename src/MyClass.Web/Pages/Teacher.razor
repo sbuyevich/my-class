@@ -13,14 +13,17 @@
 
 <RoleGate RequireTeacher="true" DeniedMessage="Only teachers can use the teacher landing page.">
     <MudStack Spacing="3">
+        @* Student reset reminder panel *@
         <div @onclick="ToggleResetPanel" style="cursor: pointer;">
             <MudPaper Elevation="0" Outlined="true" Class="pa-2">
                 <MudStack Spacing="1">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
+                        @* Student reset reminder title *@
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                             <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Secondary" Size="Size.Small" />
                             <MudText Typo="Typo.body2" Color="Color.Secondary">Student reset reminder</MudText>
                         </MudStack>
+                        @* Student reset reminder expand button *@
                         <span @onclick:stopPropagation="true">
                             <MudIconButton Icon="@(_isResetPanelExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)"
                                            Color="Color.Secondary"
@@ -34,6 +37,7 @@
                         <MudGrid Spacing="2">
                             <MudItem xs="12" md="2">
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
+                                    @* Student reset button *@
                                     <span @onclick:stopPropagation="true">
                                         <MudButton Variant="Variant.Outlined"
                                                    Color="Color.Secondary"
@@ -47,6 +51,7 @@
                                 </MudStack>
                             </MudItem>
                             <MudItem xs="12" md="10">
+                                @* Student reset instructions *@
                                 <MudStack Spacing="1">
                                     <MudText Typo="Typo.body2" Color="Color.Secondary">
                                         Click Reset to make students inactive before they log in or register.
@@ -79,17 +84,23 @@
         {
             <MudGrid Spacing="3">
                 <MudItem xs="12" md="6">
+                    @* Student URL panel *@
                     <MudPaper Elevation="1" Class="pa-4" Style="min-height: 18rem;">
                         <MudStack Spacing="2">
+                            @* Student URL prompt *@
                             <MudText Typo="Typo.h6" Color="Color.Secondary">Please enter this URL in your browser address bar:</MudText>
+                            @* Student URL value *@
                             <MudText Typo="Typo.h5" Style="overflow-wrap: anywhere;">@_studentEntryUrlResult.Value</MudText>
                         </MudStack>
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12" md="6">
+                    @* Student QR code panel *@
                     <MudPaper Elevation="1" Class="pa-4" Style="min-height: 18rem;">
                         <MudStack Spacing="2" AlignItems="AlignItems.Center">
+                            @* Student QR code prompt *@
                             <MudText Typo="Typo.h6" Color="Color.Secondary">Or scan the QR code below with your mobile device:</MudText>
+                            @* Student QR code image *@
                             <img src="@_qrCodeDataUri"
                                  style="width: min(100%, 18rem); aspect-ratio: 1; image-rendering: pixelated;"
                                  alt="QR code for the student login URL" />

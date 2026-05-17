@@ -5,22 +5,27 @@
 
 <RoleGate RequireTeacher="true" DeniedMessage="Only teachers can view quiz results.">
     <MudStack Spacing="3">
+        @* Quiz result header *@
         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
             <div>
+                @* Quiz result title *@
                 <MudText Typo="Typo.h4">@(_stateResult?.Value?.QuizName ?? "Quiz Result")</MudText>
             </div>
 
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                 @if (_stateResult?.Succeeded == true && _stateResult.Value?.HasResults == true)
                 {
+                    @* Student count chip *@
                     <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined">
                         @_stateResult.Value.StudentSummaries.Count student@(_stateResult.Value.StudentSummaries.Count == 1 ? string.Empty : "s")
                     </MudChip>
+                    @* Question count chip *@
                     <MudChip T="string" Color="Color.Secondary" Variant="Variant.Outlined">
                         @_stateResult.Value.QuestionSummaries.Count question@(_stateResult.Value.QuestionSummaries.Count == 1 ? string.Empty : "s")
                     </MudChip>
                 }
 
+                @* Export results button *@
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.FileDownload"
@@ -56,10 +61,13 @@
         else
         {
             <MudStack Spacing="3">
+                @* Student results panel *@
                 <MudPaper Elevation="1" Class="pa-4">
                     <MudStack Spacing="3">
+                        @* Student results title *@
                         <MudText Typo="Typo.h6">Students</MudText>
 
+                        @* Student search field *@
                         <MudTextField T="string"
                                       Value="_studentSearchText"
                                       ValueChanged="HandleStudentSearchChanged"
@@ -72,6 +80,7 @@
                                       AdornmentIcon="@Icons.Material.Filled.Search"
                                       Clearable="true" />
 
+                        @* Student results table *@
                         <MudTable T="QuizResultStudentSummary"
                                   Items="FilteredStudentSummaries"
                                   Dense="true"
@@ -110,10 +119,13 @@
                     </MudStack>
                 </MudPaper>
 
+                @* Question results panel *@
                 <MudPaper Elevation="1" Class="pa-4">
                     <MudStack Spacing="3">
+                        @* Question results title *@
                         <MudText Typo="Typo.h6">Questions</MudText>
 
+                        @* Question results table *@
                         <MudTable T="QuizResultQuestionSummary"
                                   Items="QuestionSummaries"
                                   Dense="true"

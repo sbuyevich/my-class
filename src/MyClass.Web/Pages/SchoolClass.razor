@@ -5,6 +5,7 @@
 
 <RoleGate RequireTeacher="true" DeniedMessage="Only teachers can manage schools and classes.">
     <MudStack Spacing="4">
+        @* School and class page title *@
         <MudText Typo="Typo.h4">School/Class</MudText>
 
         @if (_isLoading)
@@ -26,10 +27,13 @@
         else
         {
             <MudStack Spacing="3">
+                @* Schools panel *@
                 <MudPaper Elevation="1" Class="pa-4">
                     <MudStack Spacing="3">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                            @* Schools section title *@
                             <MudText Typo="Typo.h6">Schools</MudText>
+                            @* Add school button *@
                             <MudButton Variant="Variant.Filled"
                                        Color="Color.Primary"
                                        StartIcon="@Icons.Material.Filled.Add"
@@ -46,6 +50,7 @@
                         }
                         else
                         {
+                            @* Schools table *@
                             <MudTable Items="_schools" Dense="true" Hover="true" Elevation="0">
                                 <HeaderContent>
                                     <MudTh>Name</MudTh>
@@ -56,11 +61,13 @@
                                     <MudTd DataLabel="Name">@context.Name</MudTd>
                                     <MudTd DataLabel="Classes" Style="text-align:center;">@context.ClassCount</MudTd>
                                     <MudTd DataLabel="Actions" Style="text-align:right;">
+                                        @* Edit school button *@
                                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                        Size="Size.Small"
                                                        Color="Color.Primary"
                                                        aria-label="Edit school"
                                                        OnClick="() => EditSchoolAsync(context)" />
+                                        @* Delete school button *@
                                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                        Size="Size.Small"
                                                        Color="Color.Error"
@@ -74,10 +81,13 @@
                     </MudStack>
                 </MudPaper>
 
+                @* Classes panel *@
                 <MudPaper Elevation="1" Class="pa-4">
                     <MudStack Spacing="3">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                            @* Classes section title *@
                             <MudText Typo="Typo.h6">Classes</MudText>
+                            @* Add class button *@
                             <MudButton Variant="Variant.Filled"
                                        Color="Color.Primary"
                                        StartIcon="@Icons.Material.Filled.Add"
@@ -89,6 +99,7 @@
 
                         @if (_schools.Count > 0)
                         {
+                            @* School selector *@
                             <MudSelect T="int?"
                                        Value="_selectedSchoolId"
                                        ValueChanged="HandleSchoolSelectedAsync"
@@ -118,6 +129,7 @@
                         }
                         else
                         {
+                            @* Class selector *@
                             <MudSelect T="int?"
                                        Value="_selectedClassId"
                                        ValueChanged="HandleClassSelectedAsync"
@@ -132,6 +144,7 @@
                                 }
                             </MudSelect>
 
+                            @* Classes table *@
                             <MudTable Items="SelectedClasses" Dense="true" Hover="true" Elevation="0">
                                 <HeaderContent>
                                     <MudTh>Name</MudTh>
@@ -144,11 +157,13 @@
                                     <MudTd DataLabel="Code">@context.Code</MudTd>
                                     <MudTd DataLabel="Students" Style="text-align:center;">@context.StudentCount</MudTd>
                                     <MudTd DataLabel="Actions" Style="text-align:right;">
+                                        @* Edit class button *@
                                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                        Size="Size.Small"
                                                        Color="Color.Primary"
                                                        aria-label="Edit class"
                                                        OnClick="() => EditClassAsync(context)" />
+                                        @* Delete class button *@
                                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                        Size="Size.Small"
                                                        Color="Color.Error"
@@ -162,12 +177,15 @@
                     </MudStack>
                 </MudPaper>
 
+                @* Students panel *@
                 <MudPaper Elevation="1" Class="pa-4">
                     <MudStack Spacing="3">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                            @* Students section title *@
                             <MudText Typo="Typo.h6">Students</MudText>
                             @if (_studentResult?.Succeeded == true)
                             {
+                                @* Student count chip *@
                                 <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined">
                                     @StudentRows.Count student@(StudentRows.Count == 1 ? string.Empty : "s")
                                 </MudChip>
@@ -198,6 +216,7 @@
                         }
                         else
                         {
+                            @* Student search field *@
                             <MudTextField T="string"
                                           Value="_studentSearchText"
                                           ValueChanged="HandleStudentSearchChangedAsync"
@@ -218,6 +237,7 @@
                             }
                             else
                             {
+                                @* Students table *@
                                 <MudTable Items="StudentRows" Dense="true" Hover="true" Elevation="0">
                                     <HeaderContent>
                                         <MudTh>Display Name</MudTh>
@@ -230,6 +250,7 @@
                                         <MudTd DataLabel="Display Name">@context.DisplayName</MudTd>
                                         <MudTd DataLabel="User Name">@context.UserName</MudTd>
                                         <MudTd DataLabel="Active" Style="text-align:center;">
+                                            @* Student active status chip *@
                                             <MudChip T="string"
                                                      Size="Size.Small"
                                                      Color="@(context.IsActive ? Color.Success : Color.Default)"
@@ -239,6 +260,7 @@
                                         </MudTd>
                                         <MudTd DataLabel="Registered">@context.CreatedAtUtc.ToLocalTime().ToString("g")</MudTd>
                                         <MudTd DataLabel="Remove" Style="text-align:right;">
+                                            @* Remove student button *@
                                             <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                            Size="Size.Small"
                                                            Color="Color.Error"

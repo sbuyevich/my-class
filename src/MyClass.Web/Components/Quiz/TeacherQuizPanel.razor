@@ -50,6 +50,7 @@ else if (_stateResult.Value is not null)
                 }
                 else
                 {
+                    @* Quiz selector control *@
                     <MudSelect T="string"
                                Value="@(_selectedQuizPath ?? string.Empty)"
                                ValueChanged="HandleQuizSelectedAsync"
@@ -64,12 +65,14 @@ else if (_stateResult.Value is not null)
                     </MudSelect>
                 }
 
+                @* Buttons panel *@
                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
                     <MudText Typo="Typo.h4">@state.QuizTitle</MudText>
                     <MudStack Spacing="1" AlignItems="AlignItems.End">
                         <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
                             @if (!state.HasSession)
                             {
+                                @* Start quiz *@
                                 <MudButton Variant="Variant.Filled"
                                            Color="Color.Primary"
                                            StartIcon="@Icons.Material.Filled.PlayArrow"
@@ -80,6 +83,7 @@ else if (_stateResult.Value is not null)
                             }
                             else
                             {
+                                @* Restart quiz *@
                                 <MudButton Variant="Variant.Outlined"
                                            Color="Color.Secondary"
                                            StartIcon="@Icons.Material.Filled.Refresh"
@@ -91,6 +95,7 @@ else if (_stateResult.Value is not null)
 
                             @if (state.HasSession && !state.IsComplete)
                             {
+                                @* Finish question *@
                                 <MudButton Variant="Variant.Filled"
                                            Color="Color.Warning"
                                            StartIcon="@Icons.Material.Filled.Stop"
@@ -98,6 +103,7 @@ else if (_stateResult.Value is not null)
                                            OnClick="FinishQuestionAsync">
                                     Finish
                                 </MudButton>
+                                @* Show answer *@
                                 <MudButton Variant="Variant.Filled"
                                            Color="Color.Secondary"
                                            StartIcon="@Icons.Material.Filled.Visibility"
@@ -105,6 +111,7 @@ else if (_stateResult.Value is not null)
                                            OnClick="ShowAnswerAsync">
                                     Answer
                                 </MudButton>
+                                @* Next question *@
                                 <MudButton Variant="Variant.Filled"
                                            Color="Color.Primary"
                                            EndIcon="@Icons.Material.Filled.SkipNext"
@@ -117,6 +124,7 @@ else if (_stateResult.Value is not null)
 
                         @if (state.HasSession && !state.IsComplete)
                         {
+                            @* Auto next *@
                             <MudSwitch T="bool"
                                        Value="_autoNext"
                                        ValueChanged="HandleAutoNextChanged"
@@ -143,9 +151,11 @@ else if (_stateResult.Value is not null)
                 {
                     <MudStack Spacing="2">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
+                            @* Question progress label *@
                             <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
                                 Question @(state.CurrentQuestion.QuestionIndex + 1) of @state.CurrentQuestion.QuestionCount
                             </MudText>
+                            @* Question timer *@
                             <MudChip T="string"
                                      Color="@(state.CurrentQuestion.IsInProgress ? Color.Primary : Color.Default)"
                                      Variant="Variant.Filled">
@@ -159,6 +169,7 @@ else if (_stateResult.Value is not null)
                         }
                         else if (!string.IsNullOrWhiteSpace(_imageDataUri))
                         {
+                            @* Question image control *@
                             <img class="quiz-question-image"
                                  src="@_imageDataUri"
                                  alt="@state.CurrentQuestion.Title" />
@@ -170,6 +181,7 @@ else if (_stateResult.Value is not null)
 
         <MudItem md="10">
             <MudStack Spacing="2">
+                @* Student search label *@
                 <MudTextField T="string"
                               Value="_studentSearchText"
                               ValueChanged="HandleStudentSearchChanged"
@@ -182,6 +194,7 @@ else if (_stateResult.Value is not null)
                               AdornmentIcon="@Icons.Material.Filled.Search"
                               Clearable="true" />
 
+                @* Student answer grid control *@
                 <MudTable T="QuizStudentAnswerStatus"
                           Items="FilteredStudents"
                           Dense="true"
@@ -226,6 +239,7 @@ else if (_stateResult.Value is not null)
                     <RowTemplate>
                         <MudTd DataLabel="Student">@context.DisplayName</MudTd>
                         <MudTd DataLabel="Answer">
+                            @* Answer result *@
                             <MudChip T="string"
                                      Size="Size.Small"
                                      Color="@GetAnswerResultColor(context, state.CurrentQuestion?.IsAnswerRevealed == true)"

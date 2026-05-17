@@ -17,15 +17,18 @@ else
     <MudStack Spacing="3" Class="quiz-answer-shell">
         <MudStack Spacing="1">
             <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
+                @* Quiz title *@
                 <MudText Typo="Typo.h5">@QuizTitle</MudText>
             </MudStack>
 
             @if (QuestionProgress.Count > 0)
             {
+                @* Question progress row *@
                 <div class="quiz-progress-row" aria-label="Quiz question progress">
                     <MudText Typo="Typo.h6">Questions: </MudText>
                     @foreach (var item in QuestionProgress)
                     {
+                        @* Question progress button *@
                         <span class="@GetProgressCircleClass(item)"
                               title="@GetProgressCircleTitle(item)">
                             @(item.QuestionIndex + 1)
@@ -36,6 +39,7 @@ else
 
             @if (ShowRevealMessage)
             {
+                @* Answer reveal message *@
                 <div class="@GetRevealMessageClass()">
                     @RevealMessage
                 </div>
@@ -43,6 +47,7 @@ else
             else
             {
                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Spacing="2">
+                    @* Quiz status message *@
                     <MudText Typo="Typo.subtitle1"
                              Color="Color.Secondary"
                              Align="Align.Center"
@@ -51,6 +56,7 @@ else
                     </MudText>
                     @if (ShowTimer)
                     {
+                        @* Question timer *@
                         <MudChip T="string"
                                  Color="@(IsTimerRunning ? Color.Primary : Color.Default)"
                                  Variant="Variant.Filled">
@@ -67,6 +73,7 @@ else
         }
         else if (!string.IsNullOrWhiteSpace(_imageDataUri))
         {
+            @* Question image *@
             <img class="quiz-answer-question-image"
                  src="@_imageDataUri"
                  alt="@QuestionImageAltText" />
@@ -74,12 +81,15 @@ else
 
         @if (ShowAnswerButtons)
         {
+            @* Answer instruction text *@
             <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Align="Align.Center">
                 Click on button with correct answer number
             </MudText>
+            @* Answer button list *@
             <div class="quiz-answer-buttons">
                 @foreach (var answer in AnswerChoices)
                 {
+                    @* Answer button *@
                     <MudButton Variant="Variant.Filled"
                                Color="Color.Secondary"
                                Class="quiz-answer-button"
